@@ -12,17 +12,41 @@
 
 ## 資料夾
 
+標「計畫」的還沒建，等寫到那部分時才會出現。
+
 ```text
-docs/                 文件和圖
-server/               Bun 後端
-  src/
-    index.ts          入口：檢查 token、把請求分派給模組
-    generate/         /generate 和 /revise（還沒實作）
-    transcribe/       /transcribe（還沒實作）
-docker-compose.yml
+ai-note-app/
+├── docs/                          文件和圖
+│   ├── AI筆記App_概念文件.md
+│   ├── AI筆記App_技術架構.md
+│   ├── backend-architecture.html
+│   └── excalidraw/                架構圖的原始檔
+├── server/                        Bun 後端
+│   ├── src/
+│   │   ├── index.ts               入口：檢查 token、把請求分派給模組
+│   │   ├── index.test.ts          token 檢查的測試
+│   │   ├── generate/              模組：/generate 和 /revise
+│   │   │   ├── index.ts           主檔（目前是佔位，回 501）
+│   │   │   ├── prompt.ts          計畫：Prompt builder
+│   │   │   ├── tools.ts           計畫：Agent 的工具（calc、check block）
+│   │   │   └── types.ts           計畫：typed block 的型別
+│   │   ├── transcribe/            模組：/transcribe
+│   │   │   └── index.ts           主檔（目前是佔位，回 501）
+│   │   └── log.ts                 計畫：Response log
+│   ├── prompts/                   計畫：給模型的提示詞文字檔
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── bun.lock
+│   ├── tsconfig.json
+│   └── .env.example               設定範本（複製成 .env）
+├── ios/                           計畫：iPad App 的 Xcode 專案
+├── docker-compose.yml
+├── .gitignore
+├── LICENSE
+└── README.md
 ```
 
-iPad App（`ios/`）還沒開始。
+規則：每個模組資料夾只有一個主檔 `index.ts`，其他檔案是它的小幫手；別的模組只能引用主檔。
 
 ## 跑伺服器
 
