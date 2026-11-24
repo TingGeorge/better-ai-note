@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, spyOn, test } from "bun:test";
 
-import { transcribe } from "./index.ts";
+import { transcribe } from "../../src/transcribe/index.ts";
 
 const STT_ENV = {
   STT_BASE_URL: "https://stt.example.com/v1/",

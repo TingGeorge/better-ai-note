@@ -24,7 +24,6 @@ ai-note-app/
 ├── server/                        Bun 後端
 │   ├── src/
 │   │   ├── index.ts               入口：檢查 token、把請求分派給模組
-│   │   ├── index.test.ts          token 檢查的測試
 │   │   ├── generate/              模組：/generate 和 /revise
 │   │   │   ├── index.ts           主檔（目前是佔位，回 501）
 │   │   │   ├── prompt.ts          計畫：Prompt builder
@@ -32,10 +31,13 @@ ai-note-app/
 │   │   │   └── types.ts           計畫：typed block 的型別
 │   │   ├── transcribe/            模組：/transcribe
 │   │   │   ├── index.ts           主檔：收音檔、回傳 `{ text }`
-│   │   │   ├── index.test.ts      /transcribe 的測試
 │   │   │   ├── audio.ts           從請求讀出音檔並檢查大小、格式
 │   │   │   └── stt.ts             呼叫外部 STT API（OpenAI 相容格式）
 │   │   └── log.ts                 計畫：Response log
+│   ├── test/                      測試，資料夾結構跟 src/ 一樣
+│   │   ├── index.test.ts          token 檢查的測試
+│   │   └── transcribe/
+│   │       └── index.test.ts      /transcribe 的測試
 │   ├── prompts/                   計畫：給模型的提示詞文字檔
 │   ├── Dockerfile
 │   ├── package.json
@@ -49,7 +51,7 @@ ai-note-app/
 └── README.md
 ```
 
-規則：每個模組資料夾只有一個主檔 `index.ts`，其他檔案是它的小幫手；別的模組只能引用主檔。
+規則：每個模組資料夾只有一個主檔 `index.ts`，其他檔案是它的小幫手；別的模組只能引用主檔。測試不放在 `src/` 裡，放在 `test/` 下同樣路徑的位置，例如 `src/transcribe/index.ts` 的測試是 `test/transcribe/index.test.ts`。
 
 ## 跑伺服器
 
