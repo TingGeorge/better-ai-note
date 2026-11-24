@@ -31,7 +31,10 @@ ai-note-app/
 │   │   │   ├── tools.ts           計畫：Agent 的工具（calc、check block）
 │   │   │   └── types.ts           計畫：typed block 的型別
 │   │   ├── transcribe/            模組：/transcribe
-│   │   │   └── index.ts           主檔（目前是佔位，回 501）
+│   │   │   ├── index.ts           主檔：收音檔、回傳 `{ text }`
+│   │   │   ├── index.test.ts      /transcribe 的測試
+│   │   │   ├── audio.ts           從請求讀出音檔並檢查大小、格式
+│   │   │   └── stt.ts             呼叫外部 STT API（OpenAI 相容格式）
 │   │   └── log.ts                 計畫：Response log
 │   ├── prompts/                   計畫：給模型的提示詞文字檔
 │   ├── Dockerfile
@@ -54,7 +57,7 @@ ai-note-app/
 
 ```bash
 cd server
-cp .env.example .env    # 然後填入 ACCESS_TOKEN
+cp .env.example .env    # 然後填入 ACCESS_TOKEN；要語音輸入再填 STT_*
 bun install
 bun run dev
 ```
