@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backend Architecture</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fbfaf6;
+    --card: #ffffff;
+    --ink: #1f2430;
+    --muted: #5f6673;
+    --line: #e3e0d8;
+    --blue: #2f6fdb;
+    --purple: #7c4ddb;
+    --teal: #0894b0;
+    --orange: #d9822b;
+    --green: #2f9e5b;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #fbfaf6;
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+  }
+
+  h1 {
+    font-size: 30px;
+    margin: 0 0 8px;
+  }
+
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 6px;
+  }
+
+  h3 {
+    font-size: 17px;
+    margin: 0 0 10px;
+  }
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    font-size: 17px;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  code,
+  pre {
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+
+  code {
+    background: #f1efe9;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Status strip */
+  .status {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .status div {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .status b {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .status span {
+    font-weight: 600;
+  }
+
+  .s-draft {
+    border-left: 4px solid var(--blue) !important;
+  }
+
+  .s-code {
+    border-left: 4px solid #9aa0a8 !important;
+  }
+
+  .s-open {
+    border-left: 4px solid var(--orange) !important;
+  }
+
+  /* Diagrams */
+  .diagram {
+    overflow-x: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 14px 0 18px;
+  }
+
+  .diagram svg {
+    display: block;
+    width: 100%;
+    min-width: 600px;
+    max-width: 760px;
+    margin: 0 auto;
+    height: auto;
+  }
+
+  .diagram svg.wide {
+    max-width: 820px;
+  }
+
+  .diagram svg text {
+    font-family: var(--mono);
+    fill: #1e1e1e;
+  }
+
+  .diagram svg a:hover rect {
+    stroke-width: 3;
+  }
+
+  /* Block notes */
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--c, var(--purple));
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    min-width: 0;
+  }
+
+  .note:target {
+    outline: 2px solid var(--c, var(--purple));
+  }
+
+  .note h3 {
+    font-family: var(--mono);
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .note dl {
+    margin: 0;
+  }
+
+  .note dt {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .note dd {
+    margin: 0;
+  }
+
+  /* Step rows */
+  .rows {
+    border-top: 1px solid var(--line);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(150px, auto) 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row > * {
+    min-width: 0;
+  }
+
+  .row > b {
+    font-weight: 600;
+  }
+
+  .row code {
+    white-space: nowrap;
+  }
+
+  /* Decisions */
+  .decision {
+    margin: 18px 0 26px;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .option {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    /* Lets the code box scroll inside the card instead of widening the page */
+    min-width: 0;
+  }
+
+  .option.rec {
+    border: 2px solid var(--green);
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--green);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin-bottom: 8px;
+  }
+
+  .option pre {
+    background: #f4f2ec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 0 0 10px;
+    overflow-x: auto;
+  }
+
+  .pm {
+    margin: 4px 0 0;
+    font-size: 15px;
+  }
+
+  .plus::before {
+    content: "+ ";
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  .minus::before {
+    content: "\2212  ";
+    color: #c2410c;
+    font-weight: 700;
+  }
+
+  /* Settled decisions */
+  .assume {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+  }
+
+  .assume li {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  a {
+    color: var(--blue);
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 26px;
+    }
+
+    .status,
+    .options {
+      grid-template-columns: 1fr;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- 1. Overview -->
+  <h1>後端架構</h1>
+  <p class="lead">後端是一個小的、不存狀態的 Bun 伺服器。它收下圈選的圖片，組好提示詞，呼叫模型，再把結果串流回 iPad。</p>
+
+  <div class="status">
+    <div class="s-draft"><b>設計</b><span>草稿</span></div>
+    <div class="s-code"><b>程式</b><span>還沒開始</span></div>
+    <div class="s-open"><b>待決定</b><span>沒有</span></div>
+  </div>
+
+  <p class="muted">沒有資料庫、佇列、快取、帳號或同步；筆記只留在 iPad 上。</p>
+
+  <!-- 2. Components -->
+  <h2>後端元件</h2>
+  <p>紫色框裡的都是伺服器。點方塊可以跳到它的說明。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="10 50 1140 630" role="img" aria-label="Backend components diagram">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Frame -->
+      <rect x="250" y="70" width="670" height="590" rx="14" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="2"/>
+      <text x="268" y="100" font-size="18" font-weight="700" style="fill:#6d3fd6">Bun server (stateless, in Docker)</text>
+
+      <!-- Arrows -->
+      <line x1="200" y1="143" x2="498" y2="143" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="500" y1="180" x2="202" y2="180" stroke="#444" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr)"/>
+      <line x1="700" y1="160" x2="758" y2="160" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="902" y1="160" x2="978" y2="160" stroke="#444" stroke-width="2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <line x1="600" y1="195" x2="600" y2="268" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="600" y1="340" x2="600" y2="413" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="600" y1="485" x2="600" y2="558" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="440" y1="305" x2="498" y2="305" stroke="#444" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="442" y1="450" x2="498" y2="450" stroke="#444" stroke-width="2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <line x1="702" y1="450" x2="978" y2="450" stroke="#444" stroke-width="2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+
+      <!-- Arrow labels on white patches -->
+      <rect x="306" y="132" width="140" height="22" fill="#ffffff"/>
+      <text x="376" y="148" font-size="15" text-anchor="middle">image / audio</text>
+      <rect x="321" y="169" width="110" height="22" fill="#ffffff"/>
+      <text x="376" y="185" font-size="15" text-anchor="middle">SSE / text</text>
+
+      <!-- iPad App -->
+      <a href="#note-ipad">
+        <rect x="30" y="115" width="170" height="90" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+        <text x="115" y="166" font-size="18" font-weight="700" text-anchor="middle">iPad App</text>
+      </a>
+
+      <!-- Center column -->
+      <a href="#note-http">
+        <rect x="500" y="125" width="200" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="600" y="155" font-size="18" font-weight="700" text-anchor="middle">HTTP API</text>
+        <text x="600" y="180" font-size="15" text-anchor="middle">token check</text>
+      </a>
+      <a href="#note-builder">
+        <rect x="500" y="270" width="200" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="600" y="311" font-size="18" font-weight="700" text-anchor="middle">Prompt builder</text>
+      </a>
+      <a href="#note-agent">
+        <rect x="500" y="415" width="200" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="600" y="445" font-size="18" font-weight="700" text-anchor="middle">Agent</text>
+        <text x="600" y="470" font-size="15" text-anchor="middle">pi-agent-core</text>
+      </a>
+      <a href="#note-log">
+        <rect x="500" y="560" width="200" height="70" rx="10" fill="#c3fae8" stroke="#06b6d4" stroke-width="2"/>
+        <text x="600" y="601" font-size="18" font-weight="700" text-anchor="middle">Response log</text>
+      </a>
+
+      <!-- STT module -->
+      <a href="#note-stt">
+        <rect x="760" y="125" width="140" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="830" y="166" font-size="18" font-weight="700" text-anchor="middle">STT module</text>
+      </a>
+
+      <!-- Left column -->
+      <a href="#note-prompts">
+        <rect x="270" y="270" width="170" height="70" rx="10" fill="#fff3bf" stroke="#f59e0b" stroke-width="2"/>
+        <text x="355" y="311" font-size="18" font-weight="700" text-anchor="middle">Prompts</text>
+      </a>
+      <a href="#note-tools">
+        <rect x="270" y="415" width="170" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="355" y="445" font-size="18" font-weight="700" text-anchor="middle">Tools</text>
+        <text x="355" y="470" font-size="15" text-anchor="middle">calc, check block</text>
+      </a>
+      <a href="#note-env">
+        <rect x="270" y="560" width="170" height="70" rx="10" fill="#fff3bf" stroke="#f59e0b" stroke-width="2"/>
+        <text x="355" y="590" font-size="18" font-weight="700" text-anchor="middle">Env</text>
+        <text x="355" y="615" font-size="15" text-anchor="middle">keys, token</text>
+      </a>
+
+      <!-- External APIs -->
+      <a href="#note-sttapi">
+        <rect x="980" y="125" width="150" height="70" rx="10" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2"/>
+        <text x="1055" y="166" font-size="18" font-weight="700" text-anchor="middle">STT API</text>
+      </a>
+      <a href="#note-model">
+        <rect x="980" y="415" width="150" height="70" rx="10" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2"/>
+        <text x="1055" y="456" font-size="18" font-weight="700" text-anchor="middle">Model API</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-http">
+      <h3>HTTP API</h3>
+      <dl>
+        <dt>是什麼</dt><dd><code>Bun.serve</code> 的路由</dd>
+        <dt>做什麼</dt><dd>先檢查 token，再接收請求，用 SSE 把答案串流回去</dd>
+        <dt>例子</dt><dd><code>POST /generate</code>、<code>POST /revise</code>、<code>POST /transcribe</code></dd>
+      </dl>
+    </div>
+    <div class="note" id="note-stt">
+      <h3>STT module</h3>
+      <dl>
+        <dt>是什麼</dt><dd>一個函式</dd>
+        <dt>做什麼</dt><dd>把音檔送去 STT API，拿回文字</dd>
+        <dt>例子</dt><dd>用 OpenAI 相容格式，可換成 OpenAI、Groq 或自架 Whisper</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-builder">
+      <h3>Prompt builder</h3>
+      <dl>
+        <dt>是什麼</dt><dd>一個函式</dd>
+        <dt>做什麼</dt><dd>把圈選的圖片、使用者的需求、伺服器上的提示詞組在一起</dd>
+        <dt>例子</dt><dd>沒輸入需求時，用「你自己判斷最適合的形式」那份提示詞</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-prompts" style="--c:#f59e0b">
+      <h3>Prompts</h3>
+      <dl>
+        <dt>是什麼</dt><dd>伺服器上的文字檔</dd>
+        <dt>做什麼</dt><dd>放給模型的指示，改了不用重新上架 App</dd>
+        <dt>例子</dt><dd>規則：「數據 → 表格 + 圖表」</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-agent">
+      <h3>Agent</h3>
+      <dl>
+        <dt>是什麼</dt><dd>pi-agent-core 的 agent 迴圈（底層是 pi-ai）</dd>
+        <dt>做什麼</dt><dd>把圖片和提示詞送給模型；模型要用工具時幫它執行，再把結果交回去，直到完成</dd>
+        <dt>例子</dt><dd>畫圖表：先用工具算數字，再檢查區塊格式，不對就重畫</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-tools">
+      <h3>Tools</h3>
+      <dl>
+        <dt>是什麼</dt><dd>伺服器上的幾個函式，Agent 可以呼叫</dd>
+        <dt>做什麼</dt><dd>做模型不擅長的事：精確計算、檢查輸出格式</dd>
+        <dt>例子</dt><dd>先提兩個：<code>calc</code> 算平均數和標準差；<code>check block</code> 檢查圖表或心智圖的資料</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-model" style="--c:#d9822b">
+      <h3>Model API</h3>
+      <dl>
+        <dt>是什麼</dt><dd>外部供應商</dd>
+        <dt>做什麼</dt><dd>多模態模型</dd>
+        <dt>例子</dt><dd>看得懂手寫字和數學式</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-sttapi" style="--c:#d9822b">
+      <h3>STT API</h3>
+      <dl>
+        <dt>是什麼</dt><dd>外部供應商</dd>
+        <dt>做什麼</dt><dd>語音轉文字</dd>
+        <dt>例子</dt><dd>一句幾秒鐘的需求</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-log" style="--c:#06b6d4">
+      <h3>Response log</h3>
+      <dl>
+        <dt>是什麼</dt><dd>一個檔案或 SQLite</dd>
+        <dt>做什麼</dt><dd>記下 AI 回了什麼，用來調整提示詞</dd>
+        <dt>例子</dt><dd>找出它選錯形式的情況</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-env" style="--c:#f59e0b">
+      <h3>Env</h3>
+      <dl>
+        <dt>是什麼</dt><dd><code>.env</code> 檔</dd>
+        <dt>做什麼</dt><dd>放 <code>ACCESS_TOKEN</code>、模型和 STT 的金鑰與名稱；所有模組都會讀它</dd>
+        <dt>例子</dt><dd>改模型名稱就能換模型</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-ipad" style="--c:#4a9eed">
+      <h3>iPad App</h3>
+      <dl>
+        <dt>是什麼</dt><dd>用戶端（不屬於後端）</dd>
+        <dt>做什麼</dt><dd>畫布、送出圈選範圍、把結果畫出來</dd>
+        <dt>例子</dt><dd>Swift + SwiftUI + PencilKit</dd>
+      </dl>
+    </div>
+  </div>
+
+  <!-- 3. Request flow -->
+  <h2>一次 AI 筆請求</h2>
+  <p>圈一次送出去，文字一段段回來，最後一則訊息是完成的區塊。</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 800 610" role="img" aria-label="Sequence diagram of one AI pen request">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Lifelines -->
+      <line x1="130" y1="64" x2="130" y2="595" stroke="#9aa0a8" stroke-width="1.5" stroke-dasharray="6 6"/>
+      <line x1="400" y1="64" x2="400" y2="595" stroke="#9aa0a8" stroke-width="1.5" stroke-dasharray="6 6"/>
+      <line x1="670" y1="64" x2="670" y2="595" stroke="#9aa0a8" stroke-width="1.5" stroke-dasharray="6 6"/>
+
+      <!-- Actor headers -->
+      <rect x="60" y="20" width="140" height="44" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+      <text x="130" y="47" font-size="15" font-weight="700" text-anchor="middle">iPad App</text>
+      <rect x="330" y="20" width="140" height="44" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+      <text x="400" y="47" font-size="15" font-weight="700" text-anchor="middle">Bun server</text>
+      <rect x="600" y="20" width="140" height="44" rx="10" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2"/>
+      <text x="670" y="47" font-size="15" font-weight="700" text-anchor="middle">Model API</text>
+
+      <!-- 1 -->
+      <text x="265" y="102" font-size="14" text-anchor="middle">POST /generate</text>
+      <line x1="130" y1="112" x2="398" y2="112" stroke="#444" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <!-- 2 -->
+      <rect x="285" y="130" width="230" height="30" rx="6" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="400" y="150" font-size="13" text-anchor="middle">check token, build prompt</text>
+
+      <!-- 3 -->
+      <text x="535" y="187" font-size="14" text-anchor="middle">image + prompt</text>
+      <line x1="400" y1="197" x2="668" y2="197" stroke="#444" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <!-- 4 -->
+      <text x="535" y="232" font-size="14" text-anchor="middle">tokens</text>
+      <line x1="670" y1="242" x2="402" y2="242" stroke="#444" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr2)"/>
+
+      <!-- 5 -->
+      <text x="265" y="277" font-size="14" text-anchor="middle">SSE: delta ...</text>
+      <line x1="400" y1="287" x2="132" y2="287" stroke="#444" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr2)"/>
+
+      <!-- 6 -->
+      <text x="265" y="322" font-size="14" text-anchor="middle">SSE: done (block)</text>
+      <line x1="400" y1="332" x2="132" y2="332" stroke="#444" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <!-- 7 -->
+      <rect x="345" y="350" width="110" height="30" rx="6" fill="#c3fae8" stroke="#06b6d4" stroke-width="1.5"/>
+      <text x="400" y="370" font-size="13" text-anchor="middle">write log</text>
+
+      <!-- Divider + caption -->
+      <line x1="40" y1="408" x2="760" y2="408" stroke="#c9c5bb" stroke-width="1"/>
+      <text x="265" y="432" font-size="13" text-anchor="middle" style="fill:#6b7280">Follow-up comment</text>
+
+      <!-- 8 -->
+      <text x="265" y="465" font-size="14" text-anchor="middle">POST /revise</text>
+      <line x1="130" y1="475" x2="398" y2="475" stroke="#444" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <!-- 9 -->
+      <rect x="370" y="493" width="330" height="32" rx="6" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="535" y="514" font-size="13" text-anchor="middle">same path: prompt, model, stream</text>
+
+      <!-- 10 -->
+      <text x="265" y="555" font-size="14" text-anchor="middle">SSE: done (new block)</text>
+      <line x1="400" y1="565" x2="132" y2="565" stroke="#444" stroke-width="2" marker-end="url(#arr2)"/>
+    </svg>
+  </div>
+
+  <div class="rows">
+    <div class="row"><code>POST /generate</code><span>iPad 送出圈選範圍的圖片，加上可有可無的需求文字。</span></div>
+    <div class="row"><code>delta</code><span>等待時的預覽文字，顯示在預留區。</span></div>
+    <div class="row"><code>done (block)</code><span>最後的結果，是一個 App 畫得出來的區塊。</span></div>
+    <div class="row"><code>POST /revise</code><span>伺服器不存東西，所以 iPad 要再送一次原圖、上一版結果和留言。</span></div>
+  </div>
+
+  <!-- 4. Voice ask -->
+  <h2>語音需求</h2>
+  <p>用講的時候，先把語音轉成文字放回輸入框，使用者確認後才送出。</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 800 460" role="img" aria-label="Sequence diagram of a voice ask by dictation">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Lifelines -->
+      <line x1="130" y1="64" x2="130" y2="445" stroke="#9aa0a8" stroke-width="1.5" stroke-dasharray="6 6"/>
+      <line x1="400" y1="64" x2="400" y2="445" stroke="#9aa0a8" stroke-width="1.5" stroke-dasharray="6 6"/>
+      <line x1="670" y1="64" x2="670" y2="445" stroke="#9aa0a8" stroke-width="1.5" stroke-dasharray="6 6"/>
+
+      <!-- Actor headers -->
+      <rect x="60" y="20" width="140" height="44" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+      <text x="130" y="47" font-size="15" font-weight="700" text-anchor="middle">iPad App</text>
+      <rect x="330" y="20" width="140" height="44" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+      <text x="400" y="47" font-size="15" font-weight="700" text-anchor="middle">Bun server</text>
+      <rect x="600" y="20" width="140" height="44" rx="10" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2"/>
+      <text x="670" y="47" font-size="15" font-weight="700" text-anchor="middle">STT API</text>
+
+      <!-- 1 -->
+      <text x="265" y="102" font-size="14" text-anchor="middle">POST /transcribe (audio)</text>
+      <line x1="130" y1="112" x2="398" y2="112" stroke="#444" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- 2 -->
+      <rect x="310" y="130" width="180" height="30" rx="6" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="400" y="150" font-size="13" text-anchor="middle">check token + size</text>
+
+      <!-- 3 -->
+      <text x="535" y="187" font-size="14" text-anchor="middle">audio</text>
+      <line x1="400" y1="197" x2="668" y2="197" stroke="#444" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- 4 -->
+      <text x="535" y="232" font-size="14" text-anchor="middle">text</text>
+      <line x1="670" y1="242" x2="402" y2="242" stroke="#444" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr3)"/>
+
+      <!-- 5 -->
+      <text x="265" y="277" font-size="14" text-anchor="middle">{ text }</text>
+      <line x1="400" y1="287" x2="132" y2="287" stroke="#444" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr3)"/>
+
+      <!-- 6 -->
+      <rect x="50" y="305" width="160" height="30" rx="6" fill="#b2f2bb" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="130" y="325" font-size="13" text-anchor="middle">user checks text</text>
+
+      <!-- Caption (no divider, so nothing crosses the lifelines) -->
+      <text x="265" y="372" font-size="13" text-anchor="middle" style="fill:#6b7280">Then, same as before</text>
+
+      <!-- 7 -->
+      <text x="265" y="410" font-size="14" text-anchor="middle">POST /generate (image + text)</text>
+      <line x1="130" y1="420" x2="398" y2="420" stroke="#444" stroke-width="2" marker-end="url(#arr3)"/>
+    </svg>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>聽寫，不是語音對話</b><span>錄完整段再上傳；需求只有幾秒鐘，不需要即時串流。</span></div>
+    <div class="row"><b>文字先回輸入框</b><span>中英夾雜的術語容易聽錯，使用者可以先改。</span></div>
+    <div class="row"><span><code>/generate</code> 不變</span><span>它還是只收圖片和文字。</span></div>
+    <div class="row"><b>音檔不留</b><span>轉完文字就丟掉，不寫進 log。</span></div>
+  </div>
+
+  <!-- 5. Access and deploy -->
+  <h2>連線與部署</h2>
+  <p>伺服器跑在 Docker 裡；每個請求都要帶 token，而且連線要加密。</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 800 290" role="img" aria-label="Access and deploy diagram">
+      <defs>
+        <marker id="arr4" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- iPad App -->
+      <rect x="15" y="110" width="160" height="80" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+      <text x="95" y="145" font-size="15" font-weight="700" text-anchor="middle">iPad App</text>
+      <text x="95" y="168" font-size="12" text-anchor="middle">token in Keychain</text>
+
+      <!-- iPad to Docker -->
+      <text x="262" y="138" font-size="13" text-anchor="middle">HTTPS + Bearer token</text>
+      <line x1="175" y1="150" x2="348" y2="150" stroke="#444" stroke-width="2" marker-end="url(#arr4)"/>
+
+      <!-- Docker frame -->
+      <rect x="350" y="30" width="220" height="240" rx="14" fill="#e9ecef" fill-opacity="0.5" stroke="#6b7280" stroke-width="2"/>
+      <text x="366" y="56" font-size="14" font-weight="700" style="fill:#4b5563">Docker</text>
+      <rect x="375" y="70" width="170" height="50" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+      <text x="460" y="100" font-size="15" font-weight="700" text-anchor="middle">Bun server</text>
+      <rect x="375" y="135" width="170" height="50" rx="10" fill="#fff3bf" stroke="#f59e0b" stroke-width="2"/>
+      <text x="460" y="165" font-size="15" font-weight="700" text-anchor="middle">.env</text>
+      <rect x="375" y="200" width="170" height="50" rx="10" fill="#c3fae8" stroke="#06b6d4" stroke-width="2"/>
+      <text x="460" y="230" font-size="15" font-weight="700" text-anchor="middle">log volume</text>
+
+      <!-- Docker to external APIs -->
+      <line x1="570" y1="150" x2="633" y2="150" stroke="#444" stroke-width="2" marker-end="url(#arr4)"/>
+
+      <!-- External APIs -->
+      <rect x="635" y="110" width="150" height="80" rx="10" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2"/>
+      <text x="710" y="145" font-size="15" font-weight="700" text-anchor="middle">Model API</text>
+      <text x="710" y="168" font-size="15" font-weight="700" text-anchor="middle">STT API</text>
+    </svg>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>Token 放哪</b><span>伺服器 <code>.env</code> 的 <code>ACCESS_TOKEN</code>，一串長亂數。</span></div>
+    <div class="row"><b>iPad 怎麼存</b><span>在設定頁輸入伺服器網址和 token，存進 Keychain。</span></div>
+    <div class="row"><b>怎麼帶</b><span>每個請求加 <code>Authorization: Bearer &lt;token&gt;</code>。</span></div>
+    <div class="row"><b>伺服器怎麼擋</b><span>不符就回 401；沒設 token 就拒絕啟動。</span></div>
+    <div class="row"><b>不需要</b><span>帳號、登入、JWT、OAuth。</span></div>
+    <div class="row"><b>啟動</b><span><code>docker compose up -d</code>；compose 讀 <code>.env</code>，掛一個 volume 放 log。</span></div>
+  </div>
+
+  <!-- 6. Settled -->
+  <h2>已經決定</h2>
+  <ul class="assume">
+    <li><b>語音：</b>伺服器接 STT API，iPad 只負責錄音。</li>
+    <li><b>Access token：</b>要，一個共用 token。</li>
+    <li><b>模型層：</b>用 pi-agent-core。畫圖表、心智圖這類任務比較複雜，讓模型可以呼叫工具、分幾步完成。每個請求開一個新的 Agent，做完就丟，伺服器還是不存狀態。</li>
+    <li><b>統計數字：</b>平均數、標準差由 <code>calc</code> 工具用程式計算，不讓模型心算。</li>
+    <li><b>部署：</b>Docker。</li>
+    <li><b>連線加密：</b>Tailscale。伺服器不對外公開，只有你的裝置連得到；iPad 和伺服器都要裝 Tailscale。</li>
+    <li><b>Log：</b>只留 AI 的輸出和請求的基本資料，不留圖片；出錯時看不到模型當時看到什麼。</li>
+    <li><b>輸出格式：</b>Typed block，SwiftUI 把每一種原生畫出來；每一種都要寫一個畫法。
+<pre>{
+  kind: "table" | "chart" | "steps"
+      | "mindmap" | "summary",
+  data: ...
+}</pre>
+    </li>
+  </ul>
+
+  <!-- 8. Footer -->
+  <footer>
+    圖的原始檔：
+    <a href="excalidraw/backend-components.excalidraw">excalidraw/backend-components.excalidraw</a>、
+    <a href="excalidraw/backend-request-flow.excalidraw">excalidraw/backend-request-flow.excalidraw</a>、
+    <a href="excalidraw/backend-voice-flow.excalidraw">excalidraw/backend-voice-flow.excalidraw</a>
+  </footer>
+
+</main>
+</body>
+</html>
