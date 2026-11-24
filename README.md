@@ -53,7 +53,7 @@ ai-note-app/
 └── README.md
 ```
 
-規則：每個模組資料夾只有一個主檔 `index.ts`，其他檔案是它的小幫手；別的模組只能引用主檔。
+規則：每個模組資料夾只有一個主檔 `index.ts`，其他檔案是它的小幫手；別的模組只能引用主檔。測試不放在 `src/` 裡，放在 `test/` 下同樣路徑的位置，例如 `src/transcribe/index.ts` 的測試是 `test/transcribe/index.test.ts`。
 
 ## 跑伺服器
 
