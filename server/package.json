@@ -11,5 +11,10 @@
   "devDependencies": {
     "@types/bun": "^1.4.5",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "1.6.0",
+    "@earendil-works/pi-ai": "1.6.0",
+    "@earendil-works/pi-schema": "1.6.0"
   }
 }

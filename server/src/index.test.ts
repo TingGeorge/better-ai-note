@@ -27,8 +27,9 @@ test("passes_request_with_right_token_to_its_route", async () => {
 
   const response = await server.fetch(request);
 
-  // 501 comes from the generate module, so the request got past the token check and the router
-  expect(response.status).toBe(501);
+  // The generate module rejects the empty body with 400, so the request got past the token check and the router
+  expect(response.status).toBe(400);
+  expect(await response.json()).toEqual({ error: "Body must be JSON" });
 });
 
 test("answers_404_for_unknown_route", async () => {

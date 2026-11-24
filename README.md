@@ -26,14 +26,19 @@ ai-note-app/
 │   │   ├── index.ts               入口：檢查 token、把請求分派給模組
 │   │   ├── index.test.ts          token 檢查的測試
 │   │   ├── generate/              模組：/generate 和 /revise
-│   │   │   ├── index.ts           主檔（目前是佔位，回 501）
-│   │   │   ├── prompt.ts          計畫：Prompt builder
-│   │   │   ├── tools.ts           計畫：Agent 的工具（calc、check block）
-│   │   │   └── types.ts           計畫：typed block 的型別
+│   │   │   ├── index.ts           主檔：/generate（/revise 還是佔位，回 501）
+│   │   │   ├── index.test.ts      /generate 的測試（用假模型，不連網）
+│   │   │   ├── request.ts         檢查請求內容（圖片、需求文字）
+│   │   │   ├── prompt.ts          Prompt builder
+│   │   │   ├── agent.ts           讀 .env 選模型、跑 Agent
+│   │   │   ├── tools.ts           Agent 的工具（check_block；calc 是計畫）
+│   │   │   ├── types.ts           typed block 的型別和格式檢查
+│   │   │   ├── types.test.ts      格式檢查的測試
+│   │   │   └── sse.ts             SSE 串流
 │   │   ├── transcribe/            模組：/transcribe
 │   │   │   └── index.ts           主檔（目前是佔位，回 501）
 │   │   └── log.ts                 計畫：Response log
-│   ├── prompts/                   計畫：給模型的提示詞文字檔
+│   ├── prompts/                   給模型的提示詞文字檔（改了不用重啟）
 │   ├── Dockerfile
 │   ├── package.json
 │   ├── bun.lock
@@ -54,7 +59,7 @@ ai-note-app/
 
 ```bash
 cd server
-cp .env.example .env    # 然後填入 ACCESS_TOKEN
+cp .env.example .env    # 然後填入 ACCESS_TOKEN 和模型的 API 金鑰
 bun install
 bun run dev
 ```
@@ -65,6 +70,36 @@ bun run dev
 bun test
 bun run typecheck
 ```
+
+## API
+
+所有請求都要帶 `Authorization: Bearer <ACCESS_TOKEN>`。
+
+### `POST /generate`
+
+送出圈選範圍的圖片，加上可有可無的需求文字：
+
+```json
+{ "image": { "data": "<base64>", "mimeType": "image/png" }, "request": "整理成表格" }
+```
+
+回傳 SSE 串流：
+
+- `event: delta`，`{ "text": "..." }`：預覽文字，一段段來
+- `event: done`，`{ "block": { "kind": "...", "data": { ... } } }`：最後的結果
+- `event: error`，`{ "error": "..." }`：失敗的原因
+
+請求格式不對時直接回 400，不開串流。
+
+每種 block 的 `data`：
+
+| `kind` | `data` |
+| --- | --- |
+| `table` | `{ columns: string[], rows: (string \| number)[][] }` |
+| `chart` | `{ type: "bar" \| "line" \| "pie", labels: string[], series: { name, values: number[] }[] }` |
+| `steps` | `{ steps: { text, note? }[] }` |
+| `mindmap` | `{ root: { label, children? } }`（最多 6 層） |
+| `summary` | `{ points: string[], todos?: string[] }` |
 
 用 Docker 跑（在 repo 根目錄，一樣要先有 `server/.env`）：
 

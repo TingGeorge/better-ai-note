@@ -7,6 +7,7 @@ RUN bun install --frozen-lockfile --production
 
 # Copy named paths only, so a local .env can never end up in the image
 COPY src ./src
+COPY prompts ./prompts
 
 USER bun
 EXPOSE 3000
