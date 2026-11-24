@@ -1,0 +1,8 @@
+services:
+  server:
+    build: ./server
+    env_file: ./server/.env
+    ports:
+      # Listen on this machine only. The iPad reaches the server through Tailscale, not the open internet.
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped

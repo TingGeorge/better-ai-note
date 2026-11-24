@@ -1,0 +1,9 @@
+# Secrets: API keys and the access token live here
+.env
+
+node_modules/
+*.log
+.DS_Store
+
+# Xcode per-user state
+xcuserdata/
