@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { checkBlock } from "./types.ts";
+import { checkBlock } from "../../src/generate/types.ts";
 
 function problemsOf(value: unknown): string[] {
   const result = checkBlock(value);

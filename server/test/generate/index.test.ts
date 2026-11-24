@@ -9,7 +9,7 @@ import {
   type Model,
 } from "@earendil-works/pi-ai";
 
-import { createGenerate } from "./index.ts";
+import { createGenerate } from "../../src/generate/index.ts";
 
 // A scripted model: each test queues the replies it should give, and no network is used
 const faux = fauxProvider({ models: [{ id: "faux-vision", input: ["text", "image"] }] });

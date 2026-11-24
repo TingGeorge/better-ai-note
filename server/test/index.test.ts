@@ -4,7 +4,7 @@ const ACCESS_TOKEN = "test-token";
 
 // Set before importing the server: it reads the token once at load time
 Bun.env.ACCESS_TOKEN = ACCESS_TOKEN;
-const { default: server } = await import("./index.ts");
+const { default: server } = await import("../src/index.ts");
 
 test("rejects_request_without_token", async () => {
   const request = new Request("http://localhost/generate", { method: "POST" });
@@ -42,7 +42,7 @@ test("answers_404_for_unknown_route", async () => {
 
 test("refuses_to_start_with_empty_token", () => {
   const serverProcess = Bun.spawnSync({
-    cmd: ["bun", `${import.meta.dir}/index.ts`],
+    cmd: ["bun", `${import.meta.dir}/../src/index.ts`],
     env: { ...Bun.env, ACCESS_TOKEN: "" },
   });
 

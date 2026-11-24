@@ -24,20 +24,22 @@ ai-note-app/
 ├── server/                        Bun 後端
 │   ├── src/
 │   │   ├── index.ts               入口：檢查 token、把請求分派給模組
-│   │   ├── index.test.ts          token 檢查的測試
 │   │   ├── generate/              模組：/generate 和 /revise
 │   │   │   ├── index.ts           主檔：/generate（/revise 還是佔位，回 501）
-│   │   │   ├── index.test.ts      /generate 的測試（用假模型，不連網）
 │   │   │   ├── request.ts         檢查請求內容（圖片、需求文字）
 │   │   │   ├── prompt.ts          Prompt builder
 │   │   │   ├── agent.ts           讀 .env 選模型、跑 Agent
 │   │   │   ├── tools.ts           Agent 的工具（check_block；calc 是計畫）
 │   │   │   ├── types.ts           typed block 的型別和格式檢查
-│   │   │   ├── types.test.ts      格式檢查的測試
 │   │   │   └── sse.ts             SSE 串流
 │   │   ├── transcribe/            模組：/transcribe
 │   │   │   └── index.ts           主檔（目前是佔位，回 501）
 │   │   └── log.ts                 計畫：Response log
+│   ├── test/                      測試，資料夾跟 src/ 對應，和程式碼分開
+│   │   ├── index.test.ts          token 檢查的測試
+│   │   └── generate/
+│   │       ├── index.test.ts      /generate 的測試（用假模型，不連網）
+│   │       └── types.test.ts      格式檢查的測試
 │   ├── prompts/                   給模型的提示詞文字檔（改了不用重啟）
 │   ├── Dockerfile
 │   ├── package.json
