@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Note App Architecture</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fbfaf6;
+    --card: #ffffff;
+    --ink: #1f2430;
+    --muted: #5f6673;
+    --line: #e3e0d8;
+    --blue: #2f6fdb;
+    --purple: #7c4ddb;
+    --teal: #0894b0;
+    --orange: #d9822b;
+    --green: #2f9e5b;
+    --red: #d94848;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #fbfaf6;
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+  }
+
+  h1 {
+    font-size: 30px;
+    margin: 0 0 8px;
+  }
+
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 6px;
+  }
+
+  h3 {
+    font-size: 17px;
+    margin: 0 0 10px;
+  }
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    font-size: 17px;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  code,
+  pre {
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+
+  code {
+    background: #f1efe9;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  pre {
+    background: #f1efe9;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 0;
+    overflow-x: auto;
+  }
+
+  pre code {
+    padding: 0;
+    background: none;
+  }
+
+  /* Status strip */
+  .status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .status div {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    min-width: 0;
+  }
+
+  .status b {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .status span {
+    font-weight: 600;
+  }
+
+  .s-done {
+    border-left: 4px solid var(--green) !important;
+  }
+
+  .s-open {
+    border-left: 4px solid var(--orange) !important;
+  }
+
+  .s-todo {
+    border-left: 4px solid var(--red) !important;
+  }
+
+  /* Diagrams */
+  .diagram {
+    overflow-x: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 14px 0 18px;
+  }
+
+  .diagram svg {
+    display: block;
+    width: 100%;
+    min-width: 600px;
+    max-width: 760px;
+    margin: 0 auto;
+    height: auto;
+  }
+
+  .diagram svg.wide {
+    max-width: 820px;
+  }
+
+  .diagram svg text {
+    font-family: var(--mono);
+    fill: #1e1e1e;
+  }
+
+  .diagram svg a:hover rect {
+    stroke-width: 3;
+  }
+
+  /* Block notes */
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--c, var(--purple));
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .note:target {
+    outline: 2px solid var(--c, var(--purple));
+  }
+
+  .note h3 {
+    font-family: var(--mono);
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .note p {
+    margin: 0;
+  }
+
+  /* Step rows */
+  .rows {
+    border-top: 1px solid var(--line);
+    margin-top: 18px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(150px, auto) 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .row > b {
+    font-weight: 600;
+  }
+
+  .row code {
+    white-space: nowrap;
+  }
+
+  /* Small tables */
+  .verify td:nth-child(1) { min-width: 11em; }
+  .verify td:nth-child(2) { min-width: 9em; }
+  .verify { min-width: 640px; }
+  .table-box {
+    overflow-x: auto;
+    margin: 18px 0 0;
+  }
+
+  .table-box h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  td code {
+    white-space: nowrap;
+  }
+
+  /* Lists */
+  .assume {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+  }
+
+  .assume li {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+
+  a {
+    color: var(--blue);
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 26px;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- Overview -->
+  <h1>AI 筆記 App 架構</h1>
+  <p class="lead">一個 Mac 桌面 App：畫板照常用，把內容選取起來按 AI 按鈕，AI 直接在畫布上幫你改或在旁邊加東西。</p>
+
+  <div class="status">
+    <div class="s-done"><b>已定</b><span>方向與架構</span></div>
+    <div class="s-open"><b>暫定</b><span>畫面（等 Figma）</span></div>
+    <div class="s-todo"><b>還沒做</b><span>程式（後端只有骨架）</span></div>
+  </div>
+
+  <p class="muted">資料更新日 2026-11-26。舊方向（iPad、獨立伺服器）的頁面在 archive/ 裡：<a href="archive/ipad-app-architecture.html">iPad App 架構</a>、<a href="archive/backend-architecture.html">後端架構</a>。點圖上的方塊可以跳到它的說明。</p>
+
+  <!-- 1. Overview -->
+  <h2>整體</h2>
+  <p>使用者只開一個 App。AI 透過畫布的 MCP 工具直接動畫布。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="10 60 780 450" role="img" aria-label="App overview diagram">
+      <defs>
+        <marker id="arr1" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
+        </marker>
+      </defs>
+
+      <!-- Frame -->
+      <rect x="30" y="75" width="510" height="420" rx="14" fill="#d0ebff" fill-opacity="0.3" stroke="#4a9eed" stroke-width="2"/>
+      <text x="48" y="102" font-size="18" font-weight="700" style="fill:#1971c2">Mac app (from excalidraw-mac)</text>
+
+      <!-- Arrows -->
+      <line x1="170" y1="195" x2="170" y2="253" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="170" y1="325" x2="170" y2="393" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="280" y1="415" x2="598.1" y2="310.6" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="600" y1="280" x2="512" y2="280" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="310" y1="290" x2="282" y2="290" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="280" y1="450" x2="598" y2="450" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="690" y1="255" x2="690" y2="197" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+
+      <!-- Inside the app -->
+      <a href="#note-page">
+        <rect x="60" y="125" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="170" y="155" font-size="18" font-weight="700" text-anchor="middle">Excalidraw page</text>
+        <text x="170" y="179" font-size="15" text-anchor="middle">canvas, AI button</text>
+      </a>
+      <a href="#note-shell">
+        <rect x="60" y="255" width="220" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="170" y="285" font-size="18" font-weight="700" text-anchor="middle">Swift shell</text>
+        <text x="170" y="309" font-size="15" text-anchor="middle">starts the server</text>
+      </a>
+      <a href="#note-server">
+        <rect x="60" y="395" width="220" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="170" y="425" font-size="18" font-weight="700" text-anchor="middle">Bun server</text>
+        <text x="170" y="449" font-size="15" text-anchor="middle">built in, runs AI</text>
+      </a>
+      <a href="#note-mcp">
+        <rect x="310" y="255" width="200" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="410" y="285" font-size="18" font-weight="700" text-anchor="middle">Canvas MCP</text>
+        <text x="410" y="309" font-size="15" text-anchor="middle">read, add, change</text>
+      </a>
+
+      <!-- Outside the app -->
+      <a href="#note-models">
+        <rect x="600" y="125" width="180" height="70" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="690" y="155" font-size="18" font-weight="700" text-anchor="middle">Claude models</text>
+        <text x="690" y="179" font-size="15" text-anchor="middle">user's own plan</text>
+      </a>
+      <a href="#note-cc">
+        <rect x="600" y="255" width="180" height="70" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="690" y="285" font-size="18" font-weight="700" text-anchor="middle">Claude Code</text>
+        <text x="690" y="309" font-size="15" text-anchor="middle">via Agent SDK</text>
+      </a>
+      <a href="#note-stt">
+        <rect x="600" y="395" width="180" height="70" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="690" y="436" font-size="18" font-weight="700" text-anchor="middle">STT API</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-page" style="--c:#22c55e">
+      <h3>Excalidraw page</h3>
+      <p>畫布頁面（React + Excalidraw），已經有。新增的只有 AI 按鈕和輸入框。</p>
+    </div>
+    <div class="note" id="note-shell" style="--c:#868e96">
+      <h3>Swift shell</h3>
+      <p>Mac App 的外殼，已經有。打開 App 時啟動伺服器並給它一組隨機 token，關掉時停掉它。送請求給伺服器和錄音也由它做。</p>
+    </div>
+    <div class="note" id="note-server" style="--c:#8b5cf6">
+      <h3>Bun server</h3>
+      <p>包在 App 裡的後端，編成一個獨立程式。收到使用者的話，組上規則，啟動 Agent，把畫布的 MCP 工具接給它。另外負責語音轉文字。</p>
+    </div>
+    <div class="note" id="note-mcp" style="--c:#868e96">
+      <h3>Canvas MCP</h3>
+      <p>excalidraw-mac 已經有的 MCP 伺服器。它讓 AI 讀畫布、放新東西、改和刪東西。</p>
+    </div>
+    <div class="note" id="note-cc" style="--c:#d9822b">
+      <h3>Claude Code</h3>
+      <p>使用者自己裝、自己登入的程式。伺服器透過 Agent SDK 啟動它；使用者平常的設定、skills、其他 MCP 都不載入。</p>
+    </div>
+    <div class="note" id="note-models" style="--c:#d9822b">
+      <h3>Claude models</h3>
+      <p>用量算在使用者自己的 Claude 訂閱上。</p>
+    </div>
+    <div class="note" id="note-stt" style="--c:#d9822b">
+      <h3>STT API</h3>
+      <p>語音轉文字。訂閱不包含，要另外的金鑰（OpenAI 相容格式）。</p>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>平台</b><span>macOS，只支援 Apple 晶片。</span></div>
+    <div class="row"><b>基礎</b><span>excalidraw-mac（Swift 外殼 + 系統內建 WebKit + Excalidraw，MIT），程式搬進這個 repo 改。</span></div>
+    <div class="row"><b>不存狀態</b><span>伺服器不存東西，每個請求各自獨立；筆記是使用者電腦上的檔案，按 ⌘S 才存。</span></div>
+  </div>
+
+  <!-- 2. Agent SDK -->
+  <h2>Agent SDK 怎麼連到 Claude</h2>
+  <p>Agent SDK 是一小段函式庫，它會啟動 Claude Code 程式，真正和模型溝通的是那個程式。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="10 110 780 330" role="img" aria-label="How the Agent SDK works diagram">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
+        </marker>
+      </defs>
+
+      <!-- Arrows -->
+      <line x1="180" y1="165" x2="228" y2="165" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="390" y1="165" x2="438" y2="165" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="600" y1="165" x2="648" y2="165" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="430" y1="340" x2="489.2" y2="201.8" stroke="#1e1e1e" stroke-width="2" stroke-dasharray="8 6" marker-end="url(#arr2)"/>
+      <line x1="640" y1="340" x2="561" y2="201.7" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <!-- Chain -->
+      <a href="#note-ours">
+        <rect x="30" y="130" width="150" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="105" y="171" font-size="18" font-weight="700" text-anchor="middle">Our server</text>
+      </a>
+      <a href="#note-sdk">
+        <rect x="230" y="130" width="160" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="310" y="160" font-size="18" font-weight="700" text-anchor="middle">Agent SDK</text>
+        <text x="310" y="184" font-size="15" text-anchor="middle">small library</text>
+      </a>
+      <a href="#note-ccprog">
+        <rect x="440" y="130" width="160" height="70" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="520" y="160" font-size="18" font-weight="700" text-anchor="middle">Claude Code</text>
+        <text x="520" y="184" font-size="15" text-anchor="middle">program</text>
+      </a>
+      <a href="#note-sdkmodels">
+        <rect x="650" y="130" width="120" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="710" y="160" font-size="18" font-weight="700" text-anchor="middle">Claude</text>
+        <text x="710" y="184" font-size="15" text-anchor="middle">models</text>
+      </a>
+
+      <!-- Where the program comes from -->
+      <text x="30" y="288" font-size="17">Where the program</text>
+      <text x="30" y="312" font-size="17">comes from:</text>
+      <a href="#note-opta">
+        <rect x="240" y="340" width="250" height="80" rx="10" fill="#ffffff" fill-opacity="0.6" stroke="#868e96" stroke-width="2" stroke-dasharray="8 6"/>
+        <text x="365" y="374" font-size="18" font-weight="700" text-anchor="middle">A: packed in our app</text>
+        <text x="365" y="398" font-size="15" text-anchor="middle">not used, +384 MB</text>
+      </a>
+      <a href="#note-optb">
+        <rect x="530" y="340" width="250" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="655" y="374" font-size="18" font-weight="700" text-anchor="middle">B: already on the Mac</text>
+        <text x="655" y="398" font-size="15" text-anchor="middle">chosen</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-ours" style="--c:#8b5cf6">
+      <h3>Our server</h3>
+      <p>我們的後端，呼叫 Agent SDK。</p>
+    </div>
+    <div class="note" id="note-sdk" style="--c:#22c55e">
+      <h3>Agent SDK</h3>
+      <p>函式庫，很小；版本固定，不自動跟著升。</p>
+    </div>
+    <div class="note" id="note-ccprog" style="--c:#d9822b">
+      <h3>Claude Code program</h3>
+      <p>就是 Claude Code 的 CLI；SDK 0.3.N 對應 Claude Code 2.1.N。</p>
+    </div>
+    <div class="note" id="note-sdkmodels" style="--c:#868e96">
+      <h3>Claude models</h3>
+      <p>用量算在使用者自己的 Claude 訂閱上。</p>
+    </div>
+    <div class="note" id="note-opta" style="--c:#868e96">
+      <h3>A: packed in our app</h3>
+      <p>沒採用：App 會多約 384 MB，而且要發布 Anthropic 的程式。</p>
+    </div>
+    <div class="note" id="note-optb" style="--c:#22c55e">
+      <h3>B: already on the Mac</h3>
+      <p>採用：用 <code>pathToClaudeCodeExecutable</code> 指向使用者已裝好的那一份。</p>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <h3>版本不一致的保險</h3>
+    <table>
+      <tr><th>做法</th><th>處理什麼</th></tr>
+      <tr><td>App 啟動時檢查 Claude Code 版本</td><td>比最低要求舊就請使用者更新，AI 功能先不開</td></tr>
+      <tr><td>SDK 版本固定</td><td>測過哪一版就用哪一版</td></tr>
+      <tr><td>每次請求開始時檢查 Agent 實際拿到的工具清單</td><td>出現我們以外的工具就停下，不送出</td></tr>
+      <tr><td>用到的選項全部明確寫出來</td><td>預設值會隨版本變</td></tr>
+      <tr><td>找不到 Claude Code</td><td>顯示安裝說明，讓使用者在設定裡指定位置</td></tr>
+    </table>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>限制</b><span>所有使用者都要先裝好並登入 Claude Code。只能用 Claude 模型。</span></div>
+  </div>
+
+  <!-- 3. Subscription rules -->
+  <h2>用訂閱額度的規定</h2>
+  <p>截至 2026-11-26，Anthropic 的官方說明寫：第三方 App 的用量仍從使用者的訂閱額度扣。這條規定今年改過多次。</p>
+
+  <div class="table-box">
+    <table>
+      <tr><th>做法</th><th>官方文件</th></tr>
+      <tr><td>App 跑沒被修改的 Claude Code，使用者用 Claude Code 自己的登入流程登入，用量算在自己的訂閱上</td><td><b>可以</b>（我們的做法）</td></tr>
+      <tr><td>App 自己做「用 Claude 登入」的畫面</td><td><b>不可以</b></td></tr>
+      <tr><td>App 收集或保存使用者的登入憑證</td><td><b>不可以</b></td></tr>
+      <tr><td>App 代替使用者付錢，或把請求集中到某個人的訂閱</td><td><b>不可以</b></td></tr>
+    </table>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>來源</b><span><a href="https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan">https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan</a>、<a href="https://code.claude.com/docs/en/legal-and-compliance">https://code.claude.com/docs/en/legal-and-compliance</a></span></div>
+    <div class="row"><b>風險</b><span>2026 年 2 月禁止、4 月封鎖、5 月重新開放、6 月暫停改制；官方寫明可能不經通知就採取措施。為了應付再變，Agent 的部分關在 <code>generate</code> 模組的一個地方。</span></div>
+    <div class="row"><b>我的解讀</b><span>Agent SDK 總覽頁仍有「未經同意不可提供 claude.ai 登入或額度」一句，我解讀為指「App 自己做登入」。</span></div>
+  </div>
+
+  <!-- 4. Request flow -->
+  <h2>一次 AI 請求</h2>
+  <p>選取、按 AI 按鈕、說要什麼，AI 就直接動手。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="10 110 780 320" role="img" aria-label="One AI request diagram">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
+        </marker>
+      </defs>
+
+      <!-- Arrows -->
+      <line x1="250" y1="170" x2="288" y2="170" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="510" y1="170" x2="548" y2="170" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="660" y1="210" x2="660" y2="328" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="550" y1="370" x2="512" y2="370" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="290" y1="370" x2="252" y2="370" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- Steps -->
+      <a href="#note-step1">
+        <rect x="30" y="130" width="220" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="140" y="164" font-size="18" font-weight="700" text-anchor="middle">1 Select, press AI</text>
+        <text x="140" y="188" font-size="15" text-anchor="middle">type or speak</text>
+      </a>
+      <a href="#note-step2">
+        <rect x="290" y="130" width="220" height="80" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="400" y="164" font-size="18" font-weight="700" text-anchor="middle">2 Shell sends it</text>
+        <text x="400" y="188" font-size="15" text-anchor="middle">to Bun server</text>
+      </a>
+      <a href="#note-step3">
+        <rect x="550" y="130" width="220" height="80" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="660" y="164" font-size="18" font-weight="700" text-anchor="middle">3 Agent starts</text>
+        <text x="660" y="188" font-size="15" text-anchor="middle">Claude Code + MCP</text>
+      </a>
+      <a href="#note-step4">
+        <rect x="550" y="330" width="220" height="80" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="660" y="364" font-size="18" font-weight="700" text-anchor="middle">4 Agent looks</text>
+        <text x="660" y="388" font-size="15" text-anchor="middle">get_scene, image</text>
+      </a>
+      <a href="#note-step5">
+        <rect x="290" y="330" width="220" height="80" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="400" y="364" font-size="18" font-weight="700" text-anchor="middle">5 Agent edits</text>
+        <text x="400" y="388" font-size="15" text-anchor="middle">add, change, delete</text>
+      </a>
+      <a href="#note-step6">
+        <rect x="30" y="330" width="220" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="140" y="364" font-size="18" font-weight="700" text-anchor="middle">6 One undo step</text>
+        <text x="140" y="388" font-size="15" text-anchor="middle">Cmd+Z reverts all</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-step1" style="--c:#22c55e">
+      <h3>1 Select, press AI</h3>
+      <p>和一般畫板一樣選取內容，旁邊出現 AI 按鈕。按下去打字或用講的；也可以直接說要放在哪裡。</p>
+    </div>
+    <div class="note" id="note-step2" style="--c:#868e96">
+      <h3>2 Shell sends it</h3>
+      <p>Swift 外殼把這句話送給包在 App 裡的伺服器。</p>
+    </div>
+    <div class="note" id="note-step3" style="--c:#8b5cf6">
+      <h3>3 Agent starts</h3>
+      <p>伺服器啟動一個新的 Agent，只給它畫布的 MCP 工具；先檢查它實際拿到的工具清單，不對就停下。</p>
+    </div>
+    <div class="note" id="note-step4" style="--c:#d9822b">
+      <h3>4 Agent looks</h3>
+      <p>AI 用 <code>get_scene</code> 看畫布上有什麼、在哪裡、你選了什麼；需要時用 <code>render_image</code> 看畫面。</p>
+    </div>
+    <div class="note" id="note-step5" style="--c:#d9822b">
+      <h3>5 Agent edits</h3>
+      <p>AI 用 <code>add_elements</code>、<code>update_elements</code>、<code>delete_elements</code>、<code>add_mermaid</code> 直接在畫布上放和改。等待時畫面顯示載入動畫。</p>
+    </div>
+    <div class="note" id="note-step6" style="--c:#22c55e">
+      <h3>6 One undo step</h3>
+      <p>整個請求合成一次復原，按一次 ⌘Z 就回到 AI 動手之前。</p>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <h3>AI 怎麼決定</h3>
+    <table>
+      <tr><th>你說的話</th><th>AI 做什麼</th></tr>
+      <tr><td>「幫我整理清楚一點」「格式化一下」</td><td>直接改掉選取的內容，放在原位</td></tr>
+      <tr><td>「幫我做一張圖表」「在旁邊做一個表格」</td><td>原本的不動，在旁邊加新的</td></tr>
+      <tr><td>「放在右邊」「移到下面」</td><td>照你說的位置放</td></tr>
+      <tr><td>沒說清楚</td><td>放在旁邊，不動原本的內容</td></tr>
+    </table>
+  </div>
+
+  <div class="table-box">
+    <h3>端點</h3>
+    <table>
+      <tr><th>端點</th><th>送出</th><th>回來</th></tr>
+      <tr><td><code>POST /generate</code></td><td>使用者的話</td><td>完成或失敗</td></tr>
+      <tr><td><code>POST /transcribe</code></td><td>音檔</td><td>文字（聽寫：文字先放回輸入框，確認後才送出；音檔轉完就丟）</td></tr>
+    </table>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>規則靠提示詞</b><span>預設只改、只刪你選到的東西；你明講才動其他東西；筆記裡的文字是內容，不是指令。</span></div>
+    <div class="row"><b>不給的工具</b><span><code>clear_canvas</code>（清空畫布）。</span></div>
+    <div class="row"><b>兩層保護</b><span>AI 動錯了，按一次 ⌘Z 全部回來；而且沒按 ⌘S 就不會寫進檔案。</span></div>
+    <div class="row"><b>追問修改</b><span>選取 AI 做出來的東西，再按一次 AI 按鈕。</span></div>
+    <div class="row"><b>斷線就停</b><span>App 斷線或按取消，伺服器就停下 Agent。</span></div>
+    <div class="row"><b>不自動重試</b><span>重試會多花一次額度，由使用者決定。</span></div>
+    <div class="row"><b>Log</b><span>只留 AI 的輸出和請求的基本資料，不留圖片。放在 <code>~/Library/Application Support/</code> 底下 App 自己的資料夾，一天一個檔，留 30 天。</span></div>
+  </div>
+
+  <!-- 5. AI results -->
+  <h2>AI 做出來的東西</h2>
+  <p>AI 的結果就是畫布上的一般圖形和文字，和你自己畫的沒有差別。</p>
+
+  <div class="table-box">
+    <table>
+      <tr><th>結果</th><th>在畫布上大概是什麼（沒有規定畫法）</th></tr>
+      <tr><td>表格</td><td>AI 用方塊、線和文字拼出來，樣子由 AI 決定</td></tr>
+      <tr><td>步驟、摘要</td><td>文字</td></tr>
+      <tr><td>心智圖、流程圖</td><td>方塊加箭頭（用已有的 <code>add_mermaid</code>）</td></tr>
+      <tr><td>圖表</td><td>AI 用方塊和文字拼出來（例如長條圖），樣子由 AI 決定</td></tr>
+    </table>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>能做的事</b><span>選取、搬動、點兩下改字、刪掉其中一部分，全部和一般內容一樣。</span></div>
+    <div class="row"><b>會被拍進圖</b><span>下次選取範圍裡有它，AI 也看得到。</span></div>
+    <div class="row"><b>不能互動</b><span>滑鼠移到圖表上不會顯示數字。</span></div>
+    <div class="row"><b>畫布</b><span>一份筆記一張無限畫布，沒有「頁」。</span></div>
+  </div>
+
+  <!-- 6. Screens -->
+  <h2>畫面</h2>
+  <p>四個畫面，全新的只有一個。暫定，實作 UI 時用 Figma 再確認。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="0 130 800 320" role="img" aria-label="App screens diagram">
+      <defs>
+        <marker id="arr4" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
+        </marker>
+      </defs>
+
+      <!-- Arrows -->
+      <line x1="240" y1="190" x2="288" y2="190" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr4)"/>
+      <line x1="510" y1="190" x2="558" y2="190" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr4)"/>
+      <line x1="400" y1="230" x2="400" y2="348" stroke="#1e1e1e" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr4)"/>
+      <text x="414" y="296" font-size="15">menu</text>
+
+      <!-- Screens -->
+      <a href="#note-setup">
+        <rect x="20" y="150" width="220" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="130" y="184" font-size="18" font-weight="700" text-anchor="middle">Setup check</text>
+        <text x="130" y="208" font-size="15" text-anchor="middle">Claude Code ready?</text>
+      </a>
+      <a href="#note-start">
+        <rect x="290" y="150" width="220" height="80" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="400" y="184" font-size="18" font-weight="700" text-anchor="middle">Start screen</text>
+        <text x="400" y="208" font-size="15" text-anchor="middle">new, open, recent</text>
+      </a>
+      <a href="#note-canvas">
+        <rect x="560" y="150" width="220" height="80" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+        <text x="670" y="184" font-size="18" font-weight="700" text-anchor="middle">Canvas</text>
+        <text x="670" y="208" font-size="15" text-anchor="middle">canvas, AI button</text>
+      </a>
+      <a href="#note-settings">
+        <rect x="290" y="350" width="220" height="80" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="400" y="384" font-size="18" font-weight="700" text-anchor="middle">Settings</text>
+        <text x="400" y="408" font-size="15" text-anchor="middle">look, AI, voice</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-setup" style="--c:#22c55e">
+      <h3>Setup check</h3>
+      <p>新的；第一次打開或 Claude Code 有問題時才出現，檢查有沒有裝、有沒有登入、版本夠不夠。</p>
+    </div>
+    <div class="note" id="note-start" style="--c:#868e96">
+      <h3>Start screen</h3>
+      <p>已經有；新增、打開、最近的筆記。</p>
+    </div>
+    <div class="note" id="note-canvas" style="--c:#4a9eed">
+      <h3>Canvas</h3>
+      <p>核心；已有畫布，加上 AI 按鈕和輸入框。</p>
+    </div>
+    <div class="note" id="note-settings" style="--c:#868e96">
+      <h3>Settings</h3>
+      <p>已經有；加上 AI 和語音的設定。</p>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>不做</b><span>帳號和登入畫面、筆記資料庫、用量畫面。筆記就是電腦上的檔案，用 Finder 管理。</span></div>
+  </div>
+
+  <!-- 7. Settled -->
+  <h2>已經決定</h2>
+  <ul class="assume">
+    <li>Mac 桌面 App，以 excalidraw-mac 為基礎，程式搬進這個 repo 改。只支援 Apple 晶片。</li>
+    <li>畫布用 Excalidraw，用法和一般畫板一樣。</li>
+    <li>叫 AI 的方式：選取內容後出現 AI 按鈕，按下去打字或語音。</li>
+    <li>AI 用畫布的 MCP 工具直接在畫布上放和改；結果是一般圖形和文字。</li>
+    <li>AI 自己判斷要改掉原本的還是放旁邊；使用者也可以直接說放哪。</li>
+    <li>範圍靠提示詞，不加程式限制；不提供「清空畫布」。</li>
+    <li>整個 AI 請求合成一次復原。</li>
+    <li>後端是 Bun 伺服器 + Claude Agent SDK，包在 App 裡。</li>
+    <li>Claude Code 用使用者已裝好的那一份；不載入使用者的設定。</li>
+    <li>啟動時檢查版本，每次請求檢查工具清單。</li>
+    <li>不逐字串流；等待時顯示載入動畫。</li>
+    <li>由 Swift 外殼連伺服器、錄音。</li>
+    <li>不自動重試；斷線就停。</li>
+    <li>Log 放在 App 自己的資料夾，一天一個檔，留 30 天。</li>
+    <li>過時的文件放 docs/archive/。</li>
+  </ul>
+
+  <!-- 8. Tentative and open -->
+  <h2>暫定和還沒決定</h2>
+  <ul class="assume">
+    <li>四個畫面（暫定，等 Figma）。</li>
+    <li>AI 請求中途失敗或被取消時，做到一半的步驟要留著還是全部退回。</li>
+    <li>表格如果排得不好看，要不要加一個專用的「畫表格」工具。</li>
+    <li>授權：Agent SDK 函式庫會包在伺服器裡，受 Anthropic 商業條款約束；產品名稱不能用「Claude Code」。要再確認。</li>
+  </ul>
+
+  <!-- 9. Tested -->
+  <h2>實測過的</h2>
+
+  <div class="table-box">
+    <table class="verify">
+      <tr><th>項目</th><th>結果</th></tr>
+      <tr><td>把伺服器骨架編成獨立程式</td><td>成功，61 MB；編出來的簽章無效，要重新簽章才跑得起來</td></tr>
+      <tr><td>Agent SDK + 已裝的 Claude Code（版本一致）</td><td>成功，用訂閱登入，不需 API 金鑰；自訂工具、關掉內建工具、固定格式輸出一起用沒問題；約 9 秒</td></tr>
+      <tr><td>Agent SDK 編成獨立程式（63 MB）+ 已裝的 Claude Code</td><td>成功，約 11 秒</td></tr>
+      <tr><td>圖片輸入</td><td>成功，正確讀出圖上的字，約 5 秒</td></tr>
+      <tr><td>SDK 比 Claude Code 新（0.3.332 + 2.1.200）</td><td>成功，工具清單正常，約 5 秒</td></tr>
+      <tr><td>SDK 比 Claude Code 舊（0.3.200 + 2.1.332）</td><td>能跑，但 Agent 多看到使用者帳號上的其他連接器；所以要檢查工具清單</td></tr>
+      <tr><td>從 Mac App 的環境找 Claude Code</td><td>App 拿到的搜尋路徑很短，直接找找不到。做法：先看幾個常見位置，再問使用者的登入 shell，兩種都試過找得到</td></tr>
+      <tr><td>上層程式被強制關掉時，伺服器會不會自己結束</td><td>會。伺服器發現輸入管道關閉就結束。用 Bun 當上層測的，還沒用 Swift 外殼測</td></tr>
+      <tr><td>用戶端斷線時 Bun 會不會通知伺服器（Bun 1.4.0）</td><td>會，約 1 秒內</td></tr>
+    </table>
+  </div>
+
+  <div class="table-box">
+    <h3>讀原始碼和資料查到的</h3>
+    <table class="verify">
+      <tr><th>項目</th><th>結果</th></tr>
+      <tr><td>在 WebKit 裡錄音</td><td>有風險。頁面不是從 https 載入時，錄音功能可能不存在或卡住不回應（<a href="https://bugs.webkit.org/show_bug.cgi?id=220184">WebKit 回報</a>）。做法：改由 Swift 外殼錄音</td></tr>
+      <tr><td>把多個步驟合成一次復原</td><td>Excalidraw 有「晚點一起記」的模式：中間的步驟先不算，等最後一步一起算成一次復原。讀<a href="https://github.com/excalidraw/excalidraw/blob/v0.18.0/packages/excalidraw/store.ts">原始碼</a>的說明知道的，沒有實際跑過</td></tr>
+    </table>
+  </div>
+
+  <!-- 10. Not yet verified -->
+  <h2>還沒查證</h2>
+  <ul class="assume">
+    <li>Agent SDK 接上畫布的 MCP，實際在畫布上放東西。兩邊各自能用，還沒接起來試。</li>
+    <li>AI 用這些工具排出來的表格和圖表好不好看。</li>
+    <li>一次請求要幾趟、花多久。</li>
+    <li>AI 判斷「改掉還是放旁邊」準不準。</li>
+    <li>伺服器由 Swift 外殼啟動和關閉（目前只用 Bun 模擬過）。</li>
+    <li>Swift 外殼錄音再交給伺服器。</li>
+    <li>加上伺服器後 App 的實際大小（估計約 90 MB）。</li>
+  </ul>
+
+  <!-- Footer -->
+  <footer>
+    圖的原始檔：
+    <a href="excalidraw/app-overview.excalidraw">excalidraw/app-overview.excalidraw</a>、
+    <a href="excalidraw/agent-sdk.excalidraw">excalidraw/agent-sdk.excalidraw</a>、
+    <a href="excalidraw/request-flow.excalidraw">excalidraw/request-flow.excalidraw</a>、
+    <a href="excalidraw/app-screens.excalidraw">excalidraw/app-screens.excalidraw</a>
+  </footer>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iPad App Architecture</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fbfaf6;
+    --card: #ffffff;
+    --ink: #1f2430;
+    --muted: #5f6673;
+    --line: #e3e0d8;
+    --blue: #2f6fdb;
+    --purple: #7c4ddb;
+    --teal: #0894b0;
+    --orange: #d9822b;
+    --green: #2f9e5b;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #fbfaf6;
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+  }
+
+  h1 {
+    font-size: 30px;
+    margin: 0 0 8px;
+  }
+
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 6px;
+  }
+
+  h3 {
+    font-size: 17px;
+    margin: 0 0 10px;
+  }
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    font-size: 17px;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  code,
+  pre {
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+
+  code {
+    background: #f1efe9;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Status strip */
+  .status {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .status div {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .status b {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .status span {
+    font-weight: 600;
+  }
+
+  .s-open {
+    border-left: 4px solid var(--orange) !important;
+  }
+
+  /* Diagrams */
+  .diagram {
+    overflow-x: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 14px 0 18px;
+  }
+
+  .diagram svg {
+    display: block;
+    width: 100%;
+    min-width: 600px;
+    max-width: 760px;
+    margin: 0 auto;
+    height: auto;
+  }
+
+  .diagram svg.wide {
+    max-width: 820px;
+  }
+
+  .diagram svg text {
+    font-family: var(--mono);
+    fill: #1e1e1e;
+  }
+
+  .diagram svg a:hover rect {
+    stroke-width: 3;
+  }
+
+  /* Block notes */
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--c, var(--purple));
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    min-width: 0;
+  }
+
+  .note:target {
+    outline: 2px solid var(--c, var(--purple));
+  }
+
+  .note h3 {
+    font-family: var(--mono);
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .note p {
+    margin: 0;
+  }
+
+  .note dl {
+    margin: 0;
+  }
+
+  .note dt {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .note dd {
+    margin: 0;
+  }
+
+  /* Step rows */
+  .rows {
+    border-top: 1px solid var(--line);
+    margin-top: 18px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(150px, auto) 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row > * {
+    min-width: 0;
+  }
+
+  .row > b {
+    font-weight: 600;
+  }
+
+  .row code {
+    white-space: nowrap;
+  }
+
+  /* Small tables */
+  .verify td:nth-child(1) { min-width: 11em; }
+  .verify td:nth-child(2) { min-width: 9em; }
+  .verify { min-width: 640px; }
+  .table-box {
+    overflow-x: auto;
+    margin: 18px 0 0;
+  }
+
+  .table-box h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  td code {
+    white-space: nowrap;
+  }
+
+  /* Settled decisions */
+  .assume {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+  }
+
+  .assume li {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+
+  a {
+    color: var(--blue);
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 26px;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- Overview -->
+  <h1>iPad App 架構</h1>
+  <p class="lead">伺服器不存東西，所以筆記的存、讀、顯示全部是 iPad App 的工作。</p>
+
+  <div class="status">
+    <div class="s-open"><b>待決定</b><span>查證後冒出三件事：伺服器網址、背景任務、最低系統</span></div>
+  </div>
+
+  <p class="muted">伺服器那一邊見 <a href="backend-architecture.html">後端架構圖</a>。點圖上的方塊可以跳到它的說明。</p>
+
+  <!-- 1. Modules -->
+  <h2>模組</h2>
+  <p>App 分六個模組：三個是畫面，三個在畫面背後。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="10 60 1060 390" role="img" aria-label="iPad app modules diagram">
+      <defs>
+        <marker id="arr1" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Frames -->
+      <rect x="30" y="80" width="800" height="150" rx="14" fill="#d0ebff" fill-opacity="0.5" stroke="#4a9eed" stroke-width="2"/>
+      <text x="48" y="106" font-size="16" font-weight="700" style="fill:#1971c2">Screens</text>
+      <rect x="30" y="280" width="800" height="150" rx="14" fill="#d3f9d8" fill-opacity="0.5" stroke="#22c55e" stroke-width="2"/>
+      <text x="48" y="421" font-size="16" font-weight="700" style="fill:#15803d">Behind the screens</text>
+
+      <!-- Arrows: calls only go down -->
+      <line x1="170" y1="200" x2="170" y2="328" stroke="#444" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="380" y1="200" x2="231.5" y2="328.7" stroke="#444" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="430" y1="200" x2="430" y2="328" stroke="#444" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="480" y1="200" x2="628.5" y2="328.7" stroke="#444" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="690" y1="200" x2="690" y2="328" stroke="#444" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="800" y1="365" x2="878" y2="365" stroke="#444" stroke-width="2" marker-end="url(#arr1)"/>
+
+      <!-- Screens -->
+      <a href="#note-library">
+        <rect x="60" y="130" width="220" height="70" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+        <text x="170" y="160" font-size="18" font-weight="700" text-anchor="middle">Library</text>
+        <text x="170" y="184" font-size="15" text-anchor="middle">note list</text>
+      </a>
+      <a href="#note-canvas">
+        <rect x="320" y="130" width="220" height="70" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+        <text x="430" y="160" font-size="18" font-weight="700" text-anchor="middle">Canvas</text>
+        <text x="430" y="184" font-size="15" text-anchor="middle">write, circle, cards</text>
+      </a>
+      <a href="#note-settings">
+        <rect x="580" y="130" width="220" height="70" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
+        <text x="690" y="160" font-size="18" font-weight="700" text-anchor="middle">Settings</text>
+        <text x="690" y="184" font-size="15" text-anchor="middle">server URL, token</text>
+      </a>
+
+      <!-- Behind the screens -->
+      <a href="#note-store">
+        <rect x="60" y="330" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="170" y="360" font-size="18" font-weight="700" text-anchor="middle">Note store</text>
+        <text x="170" y="384" font-size="15" text-anchor="middle">reads, writes notes</text>
+      </a>
+      <a href="#note-blocks">
+        <rect x="320" y="330" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="430" y="360" font-size="18" font-weight="700" text-anchor="middle">Blocks</text>
+        <text x="430" y="384" font-size="15" text-anchor="middle">draws table, chart</text>
+      </a>
+      <a href="#note-client">
+        <rect x="580" y="330" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="690" y="360" font-size="18" font-weight="700" text-anchor="middle">Server client</text>
+        <text x="690" y="384" font-size="15" text-anchor="middle">talks to server</text>
+      </a>
+
+      <!-- Backend -->
+      <a href="#note-server">
+        <rect x="880" y="330" width="170" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="965" y="371" font-size="18" font-weight="700" text-anchor="middle">Bun server</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-library" style="--c:#4a9eed">
+      <h3>Library</h3>
+      <dl>
+        <dt>做什麼</dt><dd>筆記清單。新增、打開、刪除筆記。</dd>
+        <dt>例子</dt><dd>看到「統計作業」「生物複習」。</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-canvas" style="--c:#4a9eed">
+      <h3>Canvas</h3>
+      <dl>
+        <dt>做什麼</dt><dd>寫字、AI 筆、圈選工具、卡片疊在畫布上、輸入需求（含錄音）。</dd>
+        <dt>例子</dt><dd>圈起數據，送出。</dd>
+        <dt>注意</dt><dd>最大的模組；主檔太長時再把圈選工具拆出去。</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-settings" style="--c:#4a9eed">
+      <h3>Settings</h3>
+      <dl>
+        <dt>做什麼</dt><dd>填伺服器網址和 token。</dd>
+        <dt>例子</dt><dd>第一次打開 App 時填。</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-store" style="--c:#22c55e">
+      <h3>Note store</h3>
+      <dl>
+        <dt>做什麼</dt><dd>讀寫筆記資料夾。</dd>
+        <dt>例子</dt><dd>存下一張新卡片。</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-blocks" style="--c:#22c55e">
+      <h3>Blocks</h3>
+      <dl>
+        <dt>做什麼</dt><dd>把 typed block 畫成原生畫面，五種（table、chart、steps、mindmap、summary）各一個畫法。</dd>
+        <dt>例子</dt><dd><code>kind: "chart"</code> 畫成長條圖。</dd>
+      </dl>
+    </div>
+    <div class="note" id="note-client" style="--c:#22c55e">
+      <h3>Server client</h3>
+      <dl>
+        <dt>做什麼</dt><dd>App 裡唯一碰網路的地方。每個請求帶 token、讀 SSE 串流、管 Keychain。</dd>
+        <dt>三個功能</dt><dd><code>generate</code>、<code>revise</code>、<code>transcribe</code></dd>
+      </dl>
+    </div>
+    <div class="note" id="note-server" style="--c:#8b5cf6">
+      <h3>Bun server</h3>
+      <p>已設計好的後端，見 <a href="backend-architecture.html">後端架構圖</a>。</p>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>規則</b><span>呼叫只能往下（畫面 → 背後的模組）；背後的三個模組彼此不互相呼叫；圖上的箭頭就是全部允許的呼叫。</span></div>
+    <div class="row"><b>寫和畫</b><span>用 PencilKit（筆跡預測、壓力感應、防誤觸都保留）。</span></div>
+  </div>
+
+  <!-- 2. Note storage -->
+  <h2>筆記怎麼存</h2>
+  <p>一份筆記是一個資料夾，用檔案存，不用資料庫。</p>
+
+  <div class="diagram">
+    <svg class="wide" viewBox="10 60 840 400" role="img" aria-label="How a note is stored diagram">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Frames -->
+      <rect x="30" y="80" width="800" height="150" rx="14" fill="#f1f3f5" fill-opacity="0.8" stroke="#868e96" stroke-width="2"/>
+      <text x="48" y="106" font-size="16" font-weight="700" style="fill:#495057">Notes/ (on the iPad)</text>
+      <rect x="30" y="290" width="800" height="150" rx="14" fill="#d3f9d8" fill-opacity="0.5" stroke="#22c55e" stroke-width="2"/>
+      <text x="48" y="316" font-size="16" font-weight="700" style="fill:#15803d">One note folder</text>
+
+      <!-- Arrow: open one note -->
+      <line x1="170" y1="200" x2="170" y2="288" stroke="#444" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="182" y="252" font-size="15">open one</text>
+
+      <!-- Note folders -->
+      <rect x="60" y="130" width="220" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+      <text x="170" y="171" font-size="18" font-weight="700" text-anchor="middle">Statistics HW</text>
+      <rect x="320" y="130" width="220" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+      <text x="430" y="171" font-size="18" font-weight="700" text-anchor="middle">Biology review</text>
+      <rect x="580" y="130" width="220" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+      <text x="690" y="171" font-size="18" font-weight="700" text-anchor="middle">Meeting notes</text>
+
+      <!-- Files in one folder -->
+      <a href="#note-drawing">
+        <rect x="60" y="340" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="170" y="370" font-size="18" font-weight="700" text-anchor="middle">drawing.data</text>
+        <text x="170" y="394" font-size="15" text-anchor="middle">all pencil strokes</text>
+      </a>
+      <a href="#note-json">
+        <rect x="320" y="340" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="430" y="370" font-size="18" font-weight="700" text-anchor="middle">note.json</text>
+        <text x="430" y="394" font-size="15" text-anchor="middle">title, AI cards</text>
+      </a>
+      <a href="#note-crops">
+        <rect x="580" y="340" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="690" y="370" font-size="18" font-weight="700" text-anchor="middle">crops/</text>
+        <text x="690" y="394" font-size="15" text-anchor="middle">images sent to AI</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-drawing" style="--c:#22c55e">
+      <h3>drawing.data</h3>
+      <p>PencilKit 的全部筆跡，一份筆記一個。</p>
+    </div>
+    <div class="note" id="note-json" style="--c:#22c55e">
+      <h3>note.json</h3>
+      <p>標題、時間、AI 卡片的清單。</p>
+    </div>
+    <div class="note" id="note-crops" style="--c:#22c55e">
+      <h3>crops/</h3>
+      <p>每次送給 AI 的那張圈選圖，一張卡片一張，檔名是卡片的 id。<code>/revise</code> 時再送一次用。卡片刪掉時圖也一起刪。</p>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <h3>note.json 裡每張 AI 卡片</h3>
+    <table>
+      <tr><th>欄位</th><th>放什麼</th></tr>
+      <tr><td><code>id</code></td><td>對應 crops/ 裡的圖</td></tr>
+      <tr><td><code>frame</code></td><td>卡片在畫布上的位置和大小</td></tr>
+      <tr><td><code>block</code></td><td>現在的結果，typed block</td></tr>
+      <tr><td><code>previousBlock</code></td><td>上一版，給「復原」用</td></tr>
+      <tr><td><code>prompt</code></td><td>當時輸入的需求</td></tr>
+    </table>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>為什麼存圈選圖</b><span>之後筆跡被擦掉或改掉，重拍出來的就不是 AI 當初看到的。</span></div>
+    <div class="row"><b>存檔時機</b><span>卡片完成時，卡片和圈選圖一起寫入；生成中的只在記憶體裡。</span></div>
+  </div>
+
+  <!-- 3. Card placement -->
+  <h2>AI 卡片放在哪</h2>
+  <p>卡片放在圈選內容旁邊的空白處，先試右邊，再試下面、左邊、上面。</p>
+
+  <div class="diagram">
+    <svg viewBox="10 60 840 440" role="img" aria-label="Where an AI card goes diagram">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Frame -->
+      <rect x="30" y="80" width="800" height="400" rx="14" fill="#d0ebff" fill-opacity="0.5" stroke="#4a9eed" stroke-width="2"/>
+      <text x="48" y="106" font-size="16" font-weight="700" style="fill:#1971c2">Canvas (infinite)</text>
+
+      <!-- Arrows -->
+      <line x1="330" y1="200" x2="468" y2="200" stroke="#444" stroke-width="2" marker-end="url(#arr3)"/>
+      <line x1="200" y1="260" x2="200" y2="338" stroke="#444" stroke-width="2" marker-end="url(#arr3)"/>
+
+      <!-- Blocks -->
+      <a href="#note-circled">
+        <rect x="70" y="140" width="260" height="120" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="200" y="194" font-size="18" font-weight="700" text-anchor="middle">Circled notes</text>
+        <text x="200" y="218" font-size="15" text-anchor="middle">strokes and cards</text>
+      </a>
+      <a href="#note-card">
+        <rect x="470" y="140" width="260" height="120" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="600" y="194" font-size="18" font-weight="700" text-anchor="middle">AI card</text>
+        <text x="600" y="218" font-size="15" text-anchor="middle">1st choice: right</text>
+      </a>
+      <a href="#note-second">
+        <rect x="70" y="340" width="260" height="100" rx="10" fill="#ffffff" fill-opacity="0.6" stroke="#868e96" stroke-width="2" stroke-dasharray="8 6"/>
+        <text x="200" y="396" font-size="16" text-anchor="middle">2nd choice: below</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-circled" style="--c:#868e96">
+      <h3>Circled notes</h3>
+      <p>圈起來的內容，可以有筆跡也可以有卡片。</p>
+    </div>
+    <div class="note" id="note-card" style="--c:#22c55e">
+      <h3>AI card</h3>
+      <p>預留區，結果出來後縮放成內容大小。</p>
+    </div>
+    <div class="note" id="note-second" style="--c:#868e96">
+      <h3>2nd choice</h3>
+      <p>右邊被佔用時的備用位置。</p>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>兩層</b><span>下層是 PencilKit 筆跡，上層是 SwiftUI 畫的卡片；一起捲動、一起縮放。</span></div>
+    <div class="row"><b>圈選工具</b><span>自己做，同時認得筆跡和卡片，可以一起選、一起搬；不用 PencilKit 內建的圈選。</span></div>
+    <div class="row"><b>AI 筆圈選</b><span>筆跡和卡片一起拍進圖裡。</span></div>
+    <div class="row"><b>AI 筆畫的那一圈</b><span>送出後消失。</span></div>
+    <div class="row"><b>卡片和原本的筆跡</b><span>不會自動一起移動，要一起搬就用圈選。</span></div>
+  </div>
+
+  <!-- 4. Card states -->
+  <h2>卡片的狀態</h2>
+  <p>一張卡片只有三個狀態。</p>
+
+  <div class="diagram">
+    <svg viewBox="40 160 780 320" role="img" aria-label="AI card states diagram">
+      <defs>
+        <marker id="arr4" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+        </marker>
+      </defs>
+
+      <!-- Arrows -->
+      <line x1="300" y1="200" x2="558" y2="200" stroke="#444" stroke-width="2" marker-end="url(#arr4)"/>
+      <line x1="560" y1="240" x2="302" y2="240" stroke="#444" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr4)"/>
+      <line x1="180" y1="260" x2="180" y2="378" stroke="#444" stroke-width="2" marker-end="url(#arr4)"/>
+
+      <!-- Arrow labels on white patches -->
+      <rect x="395" y="189" width="70" height="22" fill="#ffffff"/>
+      <text x="430" y="205" font-size="15" text-anchor="middle">done</text>
+      <rect x="350" y="229" width="160" height="22" fill="#ffffff"/>
+      <text x="430" y="245" font-size="15" text-anchor="middle">comment (revise)</text>
+      <rect x="152" y="309" width="56" height="22" fill="#ffffff"/>
+      <text x="180" y="325" font-size="15" text-anchor="middle">error</text>
+
+      <!-- States -->
+      <a href="#note-generating">
+        <rect x="60" y="180" width="240" height="80" rx="10" fill="#ffec99" stroke="#f59e0b" stroke-width="2"/>
+        <text x="180" y="214" font-size="18" font-weight="700" text-anchor="middle">Generating</text>
+        <text x="180" y="238" font-size="15" text-anchor="middle">locked, preview text</text>
+      </a>
+      <a href="#note-done">
+        <rect x="560" y="180" width="240" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
+        <text x="680" y="214" font-size="18" font-weight="700" text-anchor="middle">Done</text>
+        <text x="680" y="238" font-size="15" text-anchor="middle">movable, saved</text>
+      </a>
+      <a href="#note-failed">
+        <rect x="60" y="380" width="240" height="80" rx="10" fill="#ffc9c9" stroke="#ef4444" stroke-width="2"/>
+        <text x="180" y="414" font-size="18" font-weight="700" text-anchor="middle">Failed</text>
+        <text x="180" y="438" font-size="15" text-anchor="middle">nothing saved</text>
+      </a>
+    </svg>
+  </div>
+
+  <div class="notes">
+    <div class="note" id="note-generating" style="--c:#f59e0b">
+      <h3>Generating</h3>
+      <p>預留區鎖定，不能搬；逐字出現預覽文字；可以取消。</p>
+    </div>
+    <div class="note" id="note-done" style="--c:#22c55e">
+      <h3>Done</h3>
+      <p>原生畫出的表格／圖表等；能搬、能點開留言、能復原；這時才存檔。</p>
+    </div>
+    <div class="note" id="note-failed" style="--c:#ef4444">
+      <h3>Failed</h3>
+      <p>預留區消失，跳出錯誤訊息；不存檔；要再圈一次。</p>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>追問修改</b><span>卡片回到 Generating，位置不變；失敗就留著舊結果。</span></div>
+  </div>
+
+  <!-- 5. Connection and background -->
+  <h2>連線與背景</h2>
+
+  <div class="table-box">
+    <h3>出錯時</h3>
+    <table>
+      <tr><th>情況</th><th>App 怎麼做</th></tr>
+      <tr><td><code>401</code></td><td>「token 不對，請到設定頁檢查」</td></tr>
+      <tr><td>連不到伺服器</td><td>「連不到伺服器，請確認 Tailscale 有開」</td></tr>
+      <tr><td>生成到一半斷線</td><td>卡片失敗，自己再按一次</td></tr>
+    </table>
+  </div>
+
+  <div class="rows">
+    <div class="row"><b>切到背景</b><span>用 iPadOS 26 的長時間背景任務（<code>BGContinuedProcessingTask</code>），生成可以在背景繼續；系統會顯示進度，使用者可以取消。</span></div>
+    <div class="row"><b>最低系統</b><span>iPadOS 26。</span></div>
+    <div class="row"><b>取消</b><span>App 斷開連線；伺服器發現斷線就停下模型。</span></div>
+    <div class="row"><b>套件</b><span>只用內建的 <code>URLSession</code> 讀 SSE，不加套件。</span></div>
+  </div>
+
+  <!-- 6. Settled -->
+  <h2>已經決定</h2>
+  <ul class="assume">
+    <li>筆記用資料夾 + 檔案存，不用資料庫。</li>
+    <li>圈選圖存起來，不事後重拍。</li>
+    <li>圈選工具自己做；寫和畫用 PencilKit。</li>
+    <li>AI 卡片能單獨搬、能和筆跡一起選、能被 AI 筆圈進去。</li>
+    <li>背景執行用 iPadOS 26 的長時間背景任務；最低 iPadOS 26。</li>
+    <li>六個模組，呼叫只能往下。</li>
+    <li>一份筆記是一張無限畫布，沒有「頁」。</li>
+    <li>「復原」只回上一版。</li>
+    <li>不自動重試（重試會多花一次 API 的錢）；沒有離線排隊。</li>
+    <li>App 斷線時伺服器停下模型。</li>
+  </ul>
+
+  <!-- 7. Verified -->
+  <h2>查證結果</h2>
+  <p class="lead">六個原本沒查證的問題都查過了：兩個確認，四個查到風險，要在真的 iPad 上試才有最後答案。</p>
+
+  <div class="table-box">
+    <h3>查到什麼</h3>
+    <table class="verify">
+      <tr><th>問題</th><th>結果</th><th>查到的內容</th></tr>
+      <tr>
+        <td>Bun 會不會發現 App 斷線</td>
+        <td><b>確認：會</b></td>
+        <td>實際跑了測試（Bun 1.4.0）：用戶端在 1 秒時斷線，伺服器在 1005 毫秒收到斷線訊號並停下串流。</td>
+      </tr>
+      <tr>
+        <td>伺服器網址怎麼寫</td>
+        <td><b>確認：用 https</b></td>
+        <td>iPadOS 17 起預設不允許直接連 IP 位址（<a href="https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowslocalnetworking">Apple 文件</a>）。Tailscale Serve 可以把本機的 3000 埠變成 <code>https://機器名.tailnet名.ts.net</code>，憑證來自 Let's Encrypt，只有自己的裝置連得到（<a href="https://tailscale.com/kb/1312/serve">Tailscale 文件</a>）。</td>
+      </tr>
+      <tr>
+        <td>卡片疊在畫布上一起縮放</td>
+        <td><b>有風險</b></td>
+        <td>把 PencilKit 畫布放進另一個可縮放的容器，筆跡會變模糊；開發者回報從 iOS 15 到 17 都有，Apple 沒回覆（<a href="https://developer.apple.com/forums/thread/698317">論壇</a>）。所以要讓畫布自己負責縮放，卡片跟著它動。沒找到被確認可行的做法。</td>
+      </tr>
+      <tr>
+        <td>自己做圈選、移動筆跡</td>
+        <td><b>做得到，順不順要試</b></td>
+        <td>PencilKit 讓 App 讀寫每一筆、改它的位置（<a href="https://developer.apple.com/documentation/pencilkit/pkstroke-swift.struct">Apple 文件</a>）。另外 iPadOS 27 新增了讀寫「目前選到哪些筆」的功能（<a href="https://developer.apple.com/documentation/updates/pencilkit">Apple 文件</a>），可能讓內建圈選也能用。</td>
+      </tr>
+      <tr>
+        <td>筆跡很多時的效能</td>
+        <td><b>有風險</b></td>
+        <td>開發者回報超過約 5000 筆時，每寫一筆 CPU 會衝高 3 秒；捲動時也會（<a href="https://developer.apple.com/forums/thread/700260">論壇</a>、<a href="https://developer.apple.com/forums/thread/706226">論壇</a>）。Apple 沒回覆，沒人確認修好。這些是 2022–2023 年的回報。</td>
+      </tr>
+      <tr>
+        <td>長時間背景任務</td>
+        <td><b>有風險</b></td>
+        <td>Apple 工程師說：它是給「幾分鐘」的工作用的；不到約 30 秒的事用簡單的短時間做法就好。約 30 秒沒回報進度會被當成卡住而停掉。鎖定螢幕時會暫停是已知的錯誤，有人回報 26.2 測試版仍有（<a href="https://developer.apple.com/forums/thread/796944">論壇</a>、<a href="https://developer.apple.com/forums/thread/805554">論壇</a>、<a href="https://developer.apple.com/forums/thread/796138">論壇</a>）。</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 8. Open after verification -->
+  <h2>查完後要決定的事</h2>
+  <ul class="assume">
+    <li><b>伺服器網址：</b>建議用 Tailscale Serve 的 https 網址。和現在的 Docker 設定相容（只在本機的 3000 埠上聽）。代價：機器名稱會出現在公開的憑證紀錄上。</li>
+    <li><b>背景任務：</b>一次生成如果大多在 30 秒內，Apple 工程師的建議是用簡單的短時間做法。建議先量實際生成時間再決定要不要留長時間任務。</li>
+    <li><b>最低系統要不要升到 iPadOS 27：</b>升上去就能用新的選取功能，圈選工具可能可以少寫很多。要先做小實驗才知道。</li>
+  </ul>
+
+  <!-- 9. Needs a real iPad -->
+  <h2>只能在真的 iPad 上試的</h2>
+  <ul class="assume">
+    <li>卡片跟著畫布縮放的手感。</li>
+    <li>移動一大群筆跡時畫面順不順。</li>
+    <li>幾千筆的畫布上寫字和捲動卡不卡。</li>
+    <li>長時間背景任務在切出去、鎖定螢幕時會不會被停掉。</li>
+    <li>SSE 串流經過 Tailscale Serve 會不會被擋或被延遲（Tailscale 文件沒寫）。</li>
+  </ul>
+
+  <!-- Footer -->
+  <footer>
+    圖的原始檔：
+    <a href="excalidraw/ipad-modules.excalidraw">excalidraw/ipad-modules.excalidraw</a>、
+    <a href="excalidraw/ipad-note-storage.excalidraw">excalidraw/ipad-note-storage.excalidraw</a>、
+    <a href="excalidraw/ipad-card-placement.excalidraw">excalidraw/ipad-card-placement.excalidraw</a>、
+    <a href="excalidraw/ipad-card-states.excalidraw">excalidraw/ipad-card-states.excalidraw</a>
+  </footer>
+
+</main>
+</body>
+</html>
