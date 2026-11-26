@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 
-import { generate, revise } from "./generate/index.ts";
+import { generate } from "./generate/index.ts";
 import { transcribe } from "./transcribe/index.ts";
 
 type RouteHandler = (request: Request) => Response | Promise<Response>;
@@ -15,7 +15,6 @@ const expectedAuthorizationHash = sha256(`Bearer ${accessToken}`);
 
 const routes: Record<string, RouteHandler> = {
   "POST /generate": generate,
-  "POST /revise": revise,
   "POST /transcribe": transcribe,
 };
 

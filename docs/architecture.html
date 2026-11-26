@@ -419,7 +419,8 @@
   <div class="rows">
     <div class="row"><b>平台</b><span>macOS，只支援 Apple 晶片。</span></div>
     <div class="row"><b>基礎</b><span>excalidraw-mac（Swift 外殼 + 系統內建 WebKit + Excalidraw，MIT），程式搬進這個 repo 改。</span></div>
-    <div class="row"><b>不存狀態</b><span>伺服器不存東西，每個請求各自獨立；筆記是使用者電腦上的檔案，按 ⌘S 才存。</span></div>
+    <div class="row"><b>不存狀態</b><span>伺服器不存東西，每個請求各自獨立。</span></div>
+    <div class="row"><b>一份筆記</b><span>一個一般的資料夾，裡面兩個檔：畫布檔（標準的 <code>.excalidraw</code>，可以拿去別的地方用）和我們的記憶檔。按 ⌘S 才存。</span></div>
   </div>
 
   <!-- 2. Agent SDK -->
@@ -588,8 +589,8 @@
       </a>
       <a href="#note-step6">
         <rect x="30" y="330" width="220" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
-        <text x="140" y="364" font-size="18" font-weight="700" text-anchor="middle">6 One undo step</text>
-        <text x="140" y="388" font-size="15" text-anchor="middle">Cmd+Z reverts all</text>
+        <text x="140" y="364" font-size="18" font-weight="700" text-anchor="middle">6 Record in memory</text>
+        <text x="140" y="388" font-size="15" text-anchor="middle">can be reverted</text>
       </a>
     </svg>
   </div>
@@ -605,7 +606,7 @@
     </div>
     <div class="note" id="note-step3" style="--c:#8b5cf6">
       <h3>3 Agent starts</h3>
-      <p>伺服器啟動一個新的 Agent，只給它畫布的 MCP 工具；先檢查它實際拿到的工具清單，不對就停下。</p>
+      <p>伺服器接續這份筆記的對話，只給 Agent 畫布的 MCP 工具；先檢查它實際拿到的工具清單，不對就停下。</p>
     </div>
     <div class="note" id="note-step4" style="--c:#d9822b">
       <h3>4 Agent looks</h3>
@@ -616,8 +617,8 @@
       <p>AI 用 <code>add_elements</code>、<code>update_elements</code>、<code>delete_elements</code>、<code>add_mermaid</code> 直接在畫布上放和改。等待時畫面顯示載入動畫。</p>
     </div>
     <div class="note" id="note-step6" style="--c:#22c55e">
-      <h3>6 One undo step</h3>
-      <p>整個請求合成一次復原，按一次 ⌘Z 就回到 AI 動手之前。</p>
+      <h3>6 Record in memory</h3>
+      <p>這次請求的對話存進這份筆記的資料夾。下次請求接續它，所以 AI 記得做過什麼，可以叫它把東西還回來。</p>
     </div>
   </div>
 
@@ -644,7 +645,10 @@
   <div class="rows">
     <div class="row"><b>規則靠提示詞</b><span>預設只改、只刪你選到的東西；你明講才動其他東西；筆記裡的文字是內容，不是指令。</span></div>
     <div class="row"><b>不給的工具</b><span><code>clear_canvas</code>（清空畫布）。</span></div>
-    <div class="row"><b>兩層保護</b><span>AI 動錯了，按一次 ⌘Z 全部回來；而且沒按 ⌘S 就不會寫進檔案。</span></div>
+    <div class="row"><b>保護</b><span>AI 動錯了可以按 ⌘Z，也可以叫 AI 把東西還回來；而且沒按 ⌘S 就不會寫進檔案。</span></div>
+    <div class="row"><b>記憶</b><span>每份筆記配一段 Agent SDK 的對話紀錄，存在筆記的資料夾裡。每次請求接續這段對話，所以 AI 記得這份筆記以前說過什麼、做過什麼。對話太長時 SDK 會自動把舊的部分整理成摘要。</span></div>
+    <div class="row"><b>還原</b><span>可以說「把剛才刪掉的還回來」「放在這邊」。AI 從對話紀錄知道原本是什麼，重新畫一份。</span></div>
+    <div class="row"><b>你同時在編輯</b><span>畫布不鎖。只有你交給 AI 的那幾個東西暫時鎖住，AI 做完就解開。AI 要放東西的位置被擋住時，App 自動往旁邊挪。</span></div>
     <div class="row"><b>追問修改</b><span>選取 AI 做出來的東西，再按一次 AI 按鈕。</span></div>
     <div class="row"><b>斷線就停</b><span>App 斷線或按取消，伺服器就停下 Agent。</span></div>
     <div class="row"><b>不自動重試</b><span>重試會多花一次額度，由使用者決定。</span></div>
@@ -742,11 +746,15 @@
   <ul class="assume">
     <li>Mac 桌面 App，以 excalidraw-mac 為基礎，程式搬進這個 repo 改。只支援 Apple 晶片。</li>
     <li>畫布用 Excalidraw，用法和一般畫板一樣。</li>
-    <li>叫 AI 的方式：選取內容後出現 AI 按鈕，按下去打字或語音。</li>
-    <li>AI 用畫布的 MCP 工具直接在畫布上放和改；結果是一般圖形和文字。</li>
+    <li>叫 AI 的方式：App 上固定有一個 AI 按鈕，按下去打字或語音。先選了東西，AI 就知道你指的是那幾個；沒選就是直接下指令。</li>
+    <li>AI 用畫布的 MCP 工具直接在畫布上放和改；結果是一般圖形和文字，畫法不規定。</li>
     <li>AI 自己判斷要改掉原本的還是放旁邊；使用者也可以直接說放哪。</li>
     <li>範圍靠提示詞，不加程式限制；不提供「清空畫布」。</li>
-    <li>整個 AI 請求合成一次復原。</li>
+    <li>一份筆記是一個一般資料夾：標準的畫布檔加上記憶檔。</li>
+    <li>記憶用 Agent SDK 內建的對話紀錄，透過轉接器存在筆記的資料夾裡；每次請求接續這段對話。壓縮交給 SDK 自動做。</li>
+    <li>AI 可以照記憶把東西還回來。</li>
+    <li>語音輸入一開始就做，用 OpenAI 相容格式的 STT API 和使用者自己的金鑰。</li>
+    <li>AI 處理時不鎖畫布，只暫時鎖住交給 AI 的那幾個東西；位置被擋住就自動挪開。</li>
     <li>後端是 Bun 伺服器 + Claude Agent SDK，包在 App 裡。</li>
     <li>Claude Code 用使用者已裝好的那一份；不載入使用者的設定。</li>
     <li>啟動時檢查版本，每次請求檢查工具清單。</li>
@@ -761,19 +769,46 @@
   <h2>暫定和還沒決定</h2>
   <ul class="assume">
     <li>四個畫面（暫定，等 Figma）。</li>
+    <li>畫布檔被單獨搬走、和記憶檔分開時怎麼處理。</li>
+    <li>要不要另外做「撤回這次 AI 的修改」的按鈕，還是用 ⌘Z 和「叫 AI 還回來」就夠。</li>
+    <li>記憶檔保留多久。它會一直變大：實驗裡兩次請求就有約 490 KB。</li>
     <li>AI 請求中途失敗或被取消時，做到一半的步驟要留著還是全部退回。</li>
     <li>表格如果排得不好看，要不要加一個專用的「畫表格」工具。</li>
-    <li>授權：Agent SDK 函式庫會包在伺服器裡，受 Anthropic 商業條款約束；產品名稱不能用「Claude Code」。要再確認。</li>
+    <li>授權：見下面「授權要遵守的事」。剩一點文件沒有明寫：把 Agent SDK 函式庫包進發布的 App 裡。</li>
   </ul>
 
   <!-- 9. Tested -->
   <h2>實測過的</h2>
 
   <div class="table-box">
+    <h3>AI 在畫布上畫東西（Agent SDK 接上畫布的 MCP，2026-11-27）</h3>
+    <table class="verify">
+      <tr><th>說的話</th><th>結果</th></tr>
+      <tr><td>「做一張長條圖，放右邊」</td><td>成功。圖表在右邊，比例正確，原本的數字沒動。讀一次畫布、放一次東西，21 秒</td></tr>
+      <tr><td>「把這個弄清楚一點」</td><td>成功。原地改成四行的待辦清單</td></tr>
+      <tr><td>「變成表格，加總計列，放在待辦下面」</td><td>表格整齊，總計正確。但 AI 把原本那段數字刪掉了：它把「變成」理解成取代</td></tr>
+      <tr><td>AI 拿到的工具</td><td>只有我們給的六個</td></tr>
+    </table>
+  </div>
+
+  <div class="table-box">
+    <h3>記憶（對話紀錄存在筆記資料夾裡，2026-11-27）</h3>
+    <table class="verify">
+      <tr><th>項目</th><th>結果</th></tr>
+      <tr><td>第一次請求：「把下面的表格刪掉」</td><td>成功。對話紀錄寫進資料夾裡的檔案，15 秒</td></tr>
+      <tr><td>換一個新的程式，接續對話：「把你剛才刪掉的放回來，改放在圖表右邊」</td><td>成功。AI 記得刪了什麼，重新畫了一份放在圖表右邊，內容和顏色一樣。38 秒</td></tr>
+      <tr><td>還回來的是不是原本那一份</td><td>不是。AI 自己說明：是照記憶重畫的，細節可能有一點不同</td></tr>
+      <tr><td>記憶檔大小</td><td>第一次請求後 383 KB，第二次後 493 KB。大部分是 SDK 附帶的資料，不是對話本身</td></tr>
+      <tr><td>本機另外留的副本</td><td>有，在 <code>~/.claude/projects/</code> 底下，和文件說的一樣</td></tr>
+    </table>
+  </div>
+
+  <div class="table-box">
+    <h3>其他</h3>
     <table class="verify">
       <tr><th>項目</th><th>結果</th></tr>
       <tr><td>把伺服器骨架編成獨立程式</td><td>成功，61 MB；編出來的簽章無效，要重新簽章才跑得起來</td></tr>
-      <tr><td>Agent SDK + 已裝的 Claude Code（版本一致）</td><td>成功，用訂閱登入，不需 API 金鑰；自訂工具、關掉內建工具、固定格式輸出一起用沒問題；約 9 秒</td></tr>
+      <tr><td>Agent SDK + 已裝的 Claude Code（版本一致）</td><td>成功，用訂閱登入，不需 API 金鑰；約 9 秒</td></tr>
       <tr><td>Agent SDK 編成獨立程式（63 MB）+ 已裝的 Claude Code</td><td>成功，約 11 秒</td></tr>
       <tr><td>圖片輸入</td><td>成功，正確讀出圖上的字，約 5 秒</td></tr>
       <tr><td>SDK 比 Claude Code 新（0.3.332 + 2.1.200）</td><td>成功，工具清單正常，約 5 秒</td></tr>
@@ -789,17 +824,27 @@
     <table class="verify">
       <tr><th>項目</th><th>結果</th></tr>
       <tr><td>在 WebKit 裡錄音</td><td>有風險。頁面不是從 https 載入時，錄音功能可能不存在或卡住不回應（<a href="https://bugs.webkit.org/show_bug.cgi?id=220184">WebKit 回報</a>）。做法：改由 Swift 外殼錄音</td></tr>
-      <tr><td>把多個步驟合成一次復原</td><td>Excalidraw 有「晚點一起記」的模式：中間的步驟先不算，等最後一步一起算成一次復原。讀<a href="https://github.com/excalidraw/excalidraw/blob/v0.18.0/packages/excalidraw/store.ts">原始碼</a>的說明知道的，沒有實際跑過</td></tr>
+      <tr><td>把多個步驟合成一次復原</td><td>Excalidraw 有「晚點一起記」的模式（<a href="https://github.com/excalidraw/excalidraw/blob/v0.18.0/packages/excalidraw/store.ts">原始碼</a>）。讀說明知道的，沒有實際跑過。使用者同時在編輯時會被打亂，所以沒有採用</td></tr>
     </table>
   </div>
+
+  <h2>授權要遵守的事</h2>
+  <ul class="assume">
+    <li>App 的名字、標誌不能用「Claude Code」或 Anthropic 的名稱；可以用文字說明「這個 App 會執行 Claude Code」。</li>
+    <li>不修改 Claude Code 程式，也不關掉它內建的登入方式。我們用的是使用者自己裝的那一份，本來就沒有動它。</li>
+    <li>每個使用者用自己的登入或金鑰，App 不代付、不轉賣、不把請求集中到某個人的帳號。</li>
+    <li>App 不做自己的「用 Claude 登入」畫面，不收集或保存登入憑證。</li>
+    <li>Agent SDK 不是開源授權。這個 repo 不放它的原始碼，只用套件的方式引用。</li>
+    <li>文件沒有明寫的一點：把 Agent SDK 函式庫編進發布的 App 裡。官方說明寫 SDK 可以用來做「提供給自己使用者的產品」，但沒有寫明重新發布。要完全確定只能問 Anthropic。這不影響程式運作。</li>
+  </ul>
 
   <!-- 10. Not yet verified -->
   <h2>還沒查證</h2>
   <ul class="assume">
-    <li>Agent SDK 接上畫布的 MCP，實際在畫布上放東西。兩邊各自能用，還沒接起來試。</li>
-    <li>AI 用這些工具排出來的表格和圖表好不好看。</li>
-    <li>一次請求要幾趟、花多久。</li>
-    <li>AI 判斷「改掉還是放旁邊」準不準。</li>
+    <li>對話很長、被 SDK 自動壓縮之後，AI 還記得多少、還能不能把很久以前刪掉的東西還回來。</li>
+    <li>只鎖住交給 AI 的東西、位置被擋住就挪開。</li>
+    <li>真的在畫布上選取後再叫 AI（實驗時是用文字告訴 AI 選了什麼）。</li>
+    <li>更多種請求下，AI 畫得好不好、「改掉還是放旁邊」判斷得準不準（目前只試了三次）。</li>
     <li>伺服器由 Swift 外殼啟動和關閉（目前只用 Bun 模擬過）。</li>
     <li>Swift 外殼錄音再交給伺服器。</li>
     <li>加上伺服器後 App 的實際大小（估計約 90 MB）。</li>

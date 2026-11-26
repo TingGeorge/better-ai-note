@@ -15,7 +15,7 @@
 
 標「計畫」的還沒建，等寫到那部分時才會出現。
 
-`server/` 的骨架是照先前的方向寫的（獨立伺服器、Docker），還沒照新方向調整。
+`server/` 目前只有骨架（token 檢查和兩個回 501 的端點），AI 的部分還沒寫。
 
 ```text
 ai-note-app/
@@ -32,18 +32,17 @@ ai-note-app/
 │   │   ├── generate/              模組：/generate
 │   │   │   ├── index.ts           主檔（目前是佔位，回 501）
 │   │   │   ├── prompt.ts          計畫：組提示詞（規則 + 使用者的話）
-│   │   │   └── agent.ts           計畫：啟動 Agent、接上畫布的 MCP、檢查工具清單
+│   │   │   ├── agent.ts           計畫：啟動 Agent、接上畫布的 MCP、檢查工具清單
+│   │   │   └── memory.ts          計畫：把對話紀錄存進筆記資料夾的轉接器
 │   │   ├── transcribe/            模組：/transcribe
 │   │   │   └── index.ts           主檔（目前是佔位，回 501）
 │   │   └── log.ts                 計畫：Response log
 │   ├── prompts/                   計畫：給模型的提示詞文字檔
-│   ├── Dockerfile                 先前方向留下的，之後不用 Docker
 │   ├── package.json
 │   ├── bun.lock
 │   ├── tsconfig.json
 │   └── .env.example               設定範本（複製成 .env）
 ├── mac/、web/                     計畫：Mac App 外殼和畫布頁面（從 excalidraw-mac 搬進來改）
-├── docker-compose.yml             先前方向留下的
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -67,12 +66,6 @@ bun run dev
 ```bash
 bun test
 bun run typecheck
-```
-
-用 Docker 跑（先前方向留下的做法，之後不用；在 repo 根目錄，一樣要先有 `server/.env`）：
-
-```bash
-docker compose up -d
 ```
 
 伺服器只在本機的 3000 埠上聽。之後它會被編成單一程式包進 Mac App，由 App 啟動。
