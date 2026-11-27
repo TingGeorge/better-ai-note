@@ -38,6 +38,7 @@ ai-note-app/
 │   │   │   ├── prompt.ts          計畫：組提示詞（規則 + 使用者的話）
 │   │   │   ├── agent.ts           計畫：啟動 Agent、接上畫布的 MCP、檢查工具清單
 │   │   │   └── memory.ts          計畫：把對話紀錄存進筆記資料夾的轉接器
+│   │   ├── （畫布 MCP 的模組）    計畫：TypeScript 版的畫布 MCP，連著 App 的 socket
 │   │   ├── transcribe/            模組：/transcribe
 │   │   │   └── index.ts           主檔（目前是佔位，回 501）
 │   │   └── log.ts                 計畫：Response log
@@ -46,8 +47,8 @@ ai-note-app/
 │   ├── bun.lock
 │   ├── tsconfig.json
 │   └── .env.example               設定範本（複製成 .env）
-├── mac/                           Mac App 外殼和畫布的 MCP 伺服器（Swift；以 excalidraw-mac 為基礎，App 叫 Invic）
-├── web/                           畫布頁面（React + Excalidraw；以 excalidraw-mac 為基礎）
+├── mac/                           Mac App 外殼和畫布的 MCP 伺服器（Swift；以 excalidraw-mac 為基礎，App 叫 Invic；畫布 MCP 之後改用 server/ 的 TS 版）
+├── web/                           畫布頁面（React + Excalidraw；以 excalidraw-mac 為基礎；之後首頁、設定等畫面也做在這裡；用 Bun 安裝，build 和測試要 Node）
 ├── scripts/build-app.sh           把 web/ 和 mac/ 包成 build/Invic.app
 ├── THIRD_PARTY_NOTICES.md         第三方軟體的授權（web 的 build 產生）
 ├── .gitignore

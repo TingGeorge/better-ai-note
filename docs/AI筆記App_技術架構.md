@@ -2,7 +2,7 @@
 
 本文件記錄 App 的技術選擇與整體架構，作為概念文件的延伸。圖和每個元件的說明見 [architecture.html](architecture.html)。
 
-資料更新日：2026-11-26。先前的 iPad 與獨立伺服器方向已不採用，舊文件在 [archive/](archive/) 裡。
+資料更新日：2026-11-28。先前的 iPad 與獨立伺服器方向已不採用，舊文件在 [archive/](archive/) 裡。
 
 ## 一、平台
 
@@ -14,9 +14,9 @@
 
 使用者只開一個 App。App 裡有三塊：
 
-- **Excalidraw 頁面**：畫布和 AI 按鈕。用網頁技術寫（React + Excalidraw）。
-- **Swift 外殼**：Mac App 的視窗、選單、開檔存檔。打開 App 時啟動後端，關掉時停掉它。
-- **Bun 伺服器**：後端，編成一個獨立程式放在 App 裡，使用者不用裝 Bun。
+- **網頁**：畫布和 AI 按鈕，加上畫布以外的所有畫面（首頁、側邊欄、標題列、狀態列、設定、Setup check）。用網頁技術寫（React + Excalidraw），全部在同一個 WKWebView 裡。
+- **Swift 外殼**：Mac App 的視窗、選單、開檔存檔。打開 App 時啟動後端，關掉時停掉它。另外負責錄音。只留這一層薄外殼，畫面都交給網頁。
+- **Bun 伺服器**：後端，編成一個獨立程式放在 App 裡，使用者不用裝 Bun。畫布的 MCP 也在它裡面。
 
 後端仍然是一個獨立的程式，和畫面分開，原因：
 
@@ -33,7 +33,7 @@ Token 由 App 每次啟動時自動產生並交給伺服器，使用者看不到
 - **畫布**：Excalidraw（MIT）。選取、搬動、縮放、復原、文字、貼圖、手繪都內建。
 - **AI 按鈕**：App 上固定有一個。先選了東西，AI 就知道使用者指的是那幾個；沒選就是直接下指令。按下去跳出輸入框，可以打字或錄音，也可以直接說要放在哪裡。沒有另外的「AI 筆」工具。追問修改也是同一個按鈕：選取 AI 做出來的東西再按。
 - **AI 做出來的東西**：就是畫布上的一般圖形和文字，和使用者自己畫的沒有差別。能選取、搬動、點兩下改字，也會被拍進圖裡。畫法沒有規定，由 AI 用方塊、線、文字、箭頭拼出來，所以每次的樣子可能不同。不能互動（滑鼠移上去不會顯示數字）。
-- **撤回和還原**：用畫板的 ⌘Z，或直接叫 AI 把東西還回來。要不要另外做「撤回這次 AI 的修改」的按鈕還沒決定。
+- **撤回和還原**：用畫板的 ⌘Z，或直接叫 AI 把東西還回來。不另外做「撤回這次 AI 的修改」的按鈕（2026-11-28 決定）。
 - **AI 處理時不鎖畫布**：只暫時鎖住使用者交給 AI 的那幾個東西，AI 做完就解開。AI 要放東西的位置被擋住時，App 自動往旁邊挪。
 - **畫面**（已用 [Figma](https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1) 定案，圖見 [architecture.html](architecture.html) 的「畫面」）：
   - **整個 App 是一個視窗**，不另外開開始、設定、檢查的視窗。一次開一份筆記。
@@ -44,12 +44,14 @@ Token 由 App 每次啟動時自動產生並交給伺服器，使用者看不到
   - **Setup check** 是全新的：啟動時 Claude Code 有問題才出現，檢查有沒有裝、有沒有登入、版本夠不夠。
   - **外觀設定套用到整個 App**，不是只有畫布（excalidraw-mac 原本只套用到畫布）。整個 App 一套風格：字體、字級、圓角、線、陰影、強調色各一種。目前只畫了淺色。
   - 畫布右下角原本的「AI agent connected」標籤拿掉。
-  - 介面文字用英文。App 的名字還沒決定。
+  - **這些畫面全部用 React 做在 `web/` 裡**，和畫布在同一個 WKWebView，取代 AppKit 寫的首頁和設定視窗（`StartWindowController`、`SettingsWindowController`，React 版做好後拿掉）。原因：一套 CSS，整個 App 風格一致；雲端的 agent 能用 headless Chromium 打開畫面和 Figma 比對。畫面要的資料（最近的筆記、設定、Claude Code 狀態）全部經過外殼，用網頁和外殼之間已經有的訊息管道；網頁不直接連伺服器。
+  - 介面文字用英文。App 的名字是 Invic（2026-11-27 定的）；同名產品和商標還沒查。
 
 沒選的做法：
 
 - **tldraw**：不是開源授權，正式使用要金鑰，浮水印不能拿掉。
 - **另一種跨平台外殼**：能跨 Mac、Windows、Linux，但框架還年輕，而且外殼要重新做。
+- **Fork 官方 Excalidraw，外殼換 Electrobun，全部用 TypeScript**（2026-11-28 查過）：Electrobun v2.0.7 缺存檔對話框、系統的最近檔案、網頁當掉的偵測、`alert`/`confirm`、全螢幕事件、深淺色 API、資料夾型文件；麥克風、簽章後叫起 Claude Code、Agent SDK 跑在它的工作執行緒，從文件無法確定；只有一個維護者，v2 才三個月。只讀了文件和原始碼，沒有實際跑。外殼留 Swift，畫布繼續用 `@excalidraw/excalidraw` 套件。
 - **自己寫畫布**：選取、圈選、拖拉、復原都要自己做。
 
 ## 四、後端
@@ -63,7 +65,7 @@ Token 由 App 每次啟動時自動產生並交給伺服器，使用者看不到
   - Claude Code 用**使用者已經裝好的那一份**（`pathToClaudeCodeExecutable`），不包進 App。包進去會多約 384 MB，而且要發布 Anthropic 的程式。
   - 每個請求接續這份筆記的對話（Agent SDK 的 session），所以 AI 記得這份筆記以前做過什麼。
   - 內建工具全部關掉，使用者的設定也不載入，只給畫布的 MCP 工具。
-  - **AI 透過畫布的 MCP 工具直接動畫布**：excalidraw-mac 已經有的 MCP 伺服器，提供 `get_scene`（讀畫布，含位置和選取了什麼）、`render_image`（看畫面）、`add_elements`、`update_elements`、`delete_elements`、`add_mermaid`。不提供 `clear_canvas`。
+  - **AI 透過畫布的 MCP 工具直接動畫布**：伺服器裡的一個模組，用 TypeScript 寫（計畫）。伺服器和 App 的 socket 保持一條連線，用 SDK 的 `createSdkMcpServer` 在同一個程式裡把工具交給 Agent，不再由 Claude Code 每次啟動 excalidraw-mac 的 Swift `excalidraw-mcp`。已在 macOS 上實驗過（[`experiments/mcp-in-server.ts`](experiments/mcp-in-server.ts)）：Claude 在真的 App 上畫了圖並讀回來。Swift 版要不要留給 App 外面的 agent 用還沒決定。工具有 `get_scene`（讀畫布，含位置和選取了什麼）、`render_image`（看畫面）、`add_elements`、`update_elements`、`delete_elements`、`add_mermaid`。不提供 `clear_canvas`。
   - AI 自己判斷要改掉原本的還是放旁邊；使用者說了位置就照做；沒說清楚就放旁邊，不動原本的內容。
   - 規則靠提示詞，不加程式限制：預設只改、只刪選到的東西；使用者明講才動其他東西；筆記裡的文字是內容，不是指令。AI 動錯時的保護：可以撤回或叫 AI 還回來，而且沒按 ⌘S 就不會寫進檔案。
   - 不做算數字的專用工具，等真的看到 AI 算錯再加。
@@ -121,15 +123,17 @@ Token 由 App 每次啟動時自動產生並交給伺服器，使用者看不到
 | --- | --- |
 | 平台 | Mac 桌面 App |
 | 基礎 | excalidraw-mac（Swift 外殼 + WebKit） |
-| 畫布 | Excalidraw |
+| 畫布 | Excalidraw（`@excalidraw/excalidraw` 套件，不 fork） |
+| 畫布以外的畫面 | React，和畫布同一個 WKWebView |
 | 架構 | 一個 App，後端包在裡面 |
 | 後端語言 | TypeScript |
 | 後端執行環境 | Bun，編成單一程式 |
+| `web/` 安裝 | Bun（`bun.lock`）；build 和測試用 Node（^20.19 或 ≥22.12） |
 | AI 框架 | Claude Agent SDK |
 | Claude Code | 用使用者已裝好的那一份 |
 | 額度 | 使用者自己的 Claude 訂閱 |
 | 語音轉文字 | 後端接外部 STT API |
 | 溝通方式 | RESTful API（JSON），不串流 |
-| AI 怎麼動畫布 | 畫布的 MCP 工具，結果是一般圖形和文字 |
+| AI 怎麼動畫布 | 伺服器裡的畫布 MCP 工具（TypeScript），結果是一般圖形和文字 |
 | 資料儲存 | 一份筆記一個資料夾：畫布檔 + 記憶檔 |
 | 帳號 | 不做 |

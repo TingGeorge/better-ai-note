@@ -9,7 +9,7 @@
       "x": 20,
       "y": 96,
       "width": 580,
-      "height": 500,
+      "height": 628,
       "angle": 0,
       "strokeColor": "#8b5cf6",
       "backgroundColor": "#d0bfff",
@@ -190,6 +190,71 @@
       "locked": false,
       "text": "generate/",
       "originalText": "generate/",
+      "fontSize": 15,
+      "fontFamily": 8,
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null
+    },
+    {
+      "id": "fCanvas",
+      "type": "rectangle",
+      "x": 416,
+      "y": 600,
+      "width": 178,
+      "height": 104,
+      "angle": 0,
+      "strokeColor": "#4a9eed",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 60,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 9001,
+      "version": 1,
+      "versionNonce": 10001,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "fCanvasLabel",
+      "type": "text",
+      "x": 426,
+      "y": 606,
+      "width": 117.0,
+      "height": 18.75,
+      "angle": 0,
+      "strokeColor": "#1971c2",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9002,
+      "version": 1,
+      "versionNonce": 10002,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "text": "canvas module",
+      "originalText": "canvas module",
       "fontSize": 15,
       "fontFamily": 8,
       "lineHeight": 1.25,
@@ -667,7 +732,7 @@
       "type": "rectangle",
       "x": 210,
       "y": 416,
-      "width": 180,
+      "width": 170,
       "height": 56,
       "angle": 0,
       "strokeColor": "#4a9eed",
@@ -715,7 +780,7 @@
     {
       "id": "generate_label",
       "type": "text",
-      "x": 256.8,
+      "x": 251.8,
       "y": 421.5,
       "width": 86.39999999999999,
       "height": 45.0,
@@ -753,7 +818,7 @@
       "type": "rectangle",
       "x": 210,
       "y": 504,
-      "width": 180,
+      "width": 170,
       "height": 56,
       "angle": 0,
       "strokeColor": "#4a9eed",
@@ -793,9 +858,9 @@
     {
       "id": "prompt_label",
       "type": "text",
-      "x": 224.4,
+      "x": 219.39999999999998,
       "y": 509.5,
-      "width": 151.2,
+      "width": 151.20000000000002,
       "height": 45.0,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -866,6 +931,10 @@
         {
           "type": "arrow",
           "id": "a11"
+        },
+        {
+          "type": "arrow",
+          "id": "a12"
         }
       ],
       "updated": 1,
@@ -1169,10 +1238,6 @@
         },
         {
           "type": "arrow",
-          "id": "a12"
-        },
-        {
-          "type": "arrow",
           "id": "a13"
         }
       ],
@@ -1219,13 +1284,13 @@
     {
       "id": "mcp",
       "type": "rectangle",
-      "x": 650,
-      "y": 504,
-      "width": 170,
+      "x": 430,
+      "y": 632,
+      "width": 150,
       "height": 56,
       "angle": 0,
-      "strokeColor": "#868e96",
-      "backgroundColor": "#e9ecef",
+      "strokeColor": "#4a9eed",
+      "backgroundColor": "#a5d8ff",
       "fillStyle": "solid",
       "strokeWidth": 2,
       "strokeStyle": "solid",
@@ -1248,6 +1313,10 @@
         {
           "type": "arrow",
           "id": "a12"
+        },
+        {
+          "type": "arrow",
+          "id": "aSock"
         }
       ],
       "updated": 1,
@@ -1257,10 +1326,10 @@
     {
       "id": "mcp_label",
       "type": "text",
-      "x": 681.0,
-      "y": 520.75,
-      "width": 108.0,
-      "height": 22.5,
+      "x": 440.2,
+      "y": 637.5,
+      "width": 129.6,
+      "height": 45.0,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -1280,8 +1349,8 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "text": "Canvas MCP",
-      "originalText": "Canvas MCP",
+      "text": "Canvas tools\nindex.ts",
+      "originalText": "Canvas tools\nindex.ts",
       "fontSize": 18,
       "fontFamily": 8,
       "lineHeight": 1.25,
@@ -1294,7 +1363,7 @@
       "id": "models",
       "type": "rectangle",
       "x": 650,
-      "y": 624,
+      "y": 16,
       "width": 170,
       "height": 56,
       "angle": 0,
@@ -1332,7 +1401,7 @@
       "id": "models_label",
       "type": "text",
       "x": 664.8,
-      "y": 640.75,
+      "y": 32.75,
       "width": 140.4,
       "height": 22.5,
       "angle": 0,
@@ -1367,9 +1436,9 @@
     {
       "id": "notes",
       "type": "rectangle",
-      "x": 430,
-      "y": 624,
-      "width": 150,
+      "x": 650,
+      "y": 504,
+      "width": 170,
       "height": 56,
       "angle": 0,
       "strokeColor": "#868e96",
@@ -1405,8 +1474,8 @@
     {
       "id": "notes_label",
       "type": "text",
-      "x": 445.6,
-      "y": 640.75,
+      "x": 675.6,
+      "y": 520.75,
       "width": 118.8,
       "height": 22.5,
       "angle": 0,
@@ -1841,9 +1910,9 @@
     {
       "id": "a9",
       "type": "arrow",
-      "x": 390,
+      "x": 380,
       "y": 444,
-      "width": 40,
+      "width": 50,
       "height": 0,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -1870,7 +1939,7 @@
           0
         ],
         [
-          40,
+          50,
           0
         ]
       ],
@@ -1991,10 +2060,10 @@
     {
       "id": "a12",
       "type": "arrow",
-      "x": 735,
-      "y": 472,
-      "width": 0,
-      "height": 32,
+      "x": 430,
+      "y": 462,
+      "width": 25,
+      "height": 198,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -2020,13 +2089,21 @@
           0
         ],
         [
+          -25,
+          0
+        ],
+        [
+          -25,
+          198
+        ],
+        [
           0,
-          32
+          198
         ]
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "cc",
+        "elementId": "agent",
         "focus": 0,
         "gap": 1
       },
@@ -2044,7 +2121,7 @@
       "x": 820,
       "y": 444,
       "width": 30,
-      "height": 208,
+      "height": 400,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -2075,11 +2152,11 @@
         ],
         [
           30,
-          208
+          -400
         ],
         [
           0,
-          208
+          -400
         ]
       ],
       "lastCommittedPoint": null,
@@ -2099,10 +2176,10 @@
     {
       "id": "a14",
       "type": "arrow",
-      "x": 505,
-      "y": 560,
-      "width": 0,
-      "height": 64,
+      "x": 580,
+      "y": 532,
+      "width": 70,
+      "height": 0,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -2128,8 +2205,8 @@
           0
         ],
         [
-          0,
-          64
+          70,
+          0
         ]
       ],
       "lastCommittedPoint": null,
@@ -2231,6 +2308,130 @@
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null
+    },
+    {
+      "id": "appcanvas",
+      "type": "rectangle",
+      "x": 650,
+      "y": 632,
+      "width": 170,
+      "height": 56,
+      "angle": 0,
+      "strokeColor": "#868e96",
+      "backgroundColor": "#e9ecef",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 9003,
+      "version": 1,
+      "versionNonce": 10003,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "appcanvas_label"
+        },
+        {
+          "type": "arrow",
+          "id": "aSock"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "appcanvas_label",
+      "type": "text",
+      "x": 681.0,
+      "y": 637.5,
+      "width": 108.0,
+      "height": 45.0,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9004,
+      "version": 1,
+      "versionNonce": 10004,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "text": "App canvas\nvia socket",
+      "originalText": "App canvas\nvia socket",
+      "fontSize": 18,
+      "fontFamily": 8,
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "appcanvas"
+    },
+    {
+      "id": "aSock",
+      "type": "arrow",
+      "x": 580,
+      "y": 660,
+      "width": 70,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9005,
+      "version": 1,
+      "versionNonce": 10005,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          70,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "mcp",
+        "focus": 0,
+        "gap": 1
+      },
+      "endBinding": {
+        "elementId": "appcanvas",
+        "focus": 0,
+        "gap": 1
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
     }
   ],
   "appState": {

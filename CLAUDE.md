@@ -4,9 +4,9 @@ Read `docs/handoff.md` first: it says what is done, what is next, and what canno
 
 ## Layout
 
-- `mac/` Swift AppKit shell and the canvas MCP server (`excalidraw-mcp`). Builds on macOS only.
-- `web/` React + Excalidraw page shown in the app's WKWebView.
-- `server/` Bun server that will run the Claude Agent SDK; bundled into the app later.
+- `mac/` Swift AppKit shell, kept thin: window, menus, open/save, starting the server, recording. Also the old Swift canvas MCP server (`excalidraw-mcp`); the app's own AI will use the TypeScript one in `server/` instead. Builds on macOS only.
+- `web/` React page shown in the app's WKWebView: the Excalidraw canvas and every screen around it (home, sidebar, title bar, status bar, settings, Setup check). Do not build new screens in AppKit.
+- `server/` Bun server that will run the Claude Agent SDK and the canvas MCP tools (in-process, TypeScript); bundled into the app later.
 - `scripts/build-app.sh` builds `build/Invic.app` (macOS only).
 
 ## UI must follow the Figma design
@@ -28,7 +28,7 @@ Read `docs/handoff.md` first: it says what is done, what is next, and what canno
 ## Checks
 
 - `cd server && bun test && bun run typecheck`
-- `cd web && npm ci && npm run build && npm run typecheck && npm test` (`npm test` needs Chromium: `npx playwright-core install chromium-headless-shell`, or set `PW_CHROMIUM`)
+- `cd web && bun install --frozen-lockfile && bun run build && bun run typecheck && bun run test` (Node ^20.19 or >=22.12 must be on PATH: the build and tests run on Node, and without it `bun run` silently uses Bun instead and the tests fail. `bun run test` needs Chromium: `bunx playwright-core install chromium-headless-shell`, or set `PW_CHROMIUM`)
 - `cd mac && swift build` and `scripts/build-app.sh` (macOS)
 - Never run `web/test/*-mac*` or `mouse.swift` on a person's Mac: they send keys and clicks to the frontmost app. CI runners only.
 

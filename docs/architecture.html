@@ -342,38 +342,42 @@
     <div class="s-todo"><b>還沒做</b><span>程式（後端只有骨架）</span></div>
   </div>
 
-  <p class="muted">後端的細節（模組、請求格式、記憶、設定）在<a href="backend-architecture.html">後端架構</a>。資料更新日 2026-11-26。舊方向（iPad、獨立伺服器）的頁面在 archive/ 裡：<a href="archive/ipad-app-architecture.html">iPad App 架構</a>、<a href="archive/backend-architecture.html">後端架構</a>。點圖上的方塊可以跳到它的說明。</p>
+  <p class="muted">後端的細節（模組、請求格式、記憶、設定）在<a href="backend-architecture.html">後端架構</a>。資料更新日 2026-11-28。舊方向（iPad、獨立伺服器）的頁面在 archive/ 裡：<a href="archive/ipad-app-architecture.html">iPad App 架構</a>、<a href="archive/backend-architecture.html">後端架構</a>。點圖上的方塊可以跳到它的說明。</p>
 
   <!-- 1. Overview -->
   <h2>整體</h2>
   <p>使用者只開一個 App。AI 透過畫布的 MCP 工具直接動畫布。</p>
 
   <div class="diagram">
-    <svg class="wide" viewBox="10 60 780 450" role="img" aria-label="App overview diagram">
+    <svg class="wide" viewBox="10 60 780 495" role="img" aria-label="App overview diagram">
       <defs>
-        <marker id="arr1" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <marker id="arr1" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
           <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
         </marker>
       </defs>
 
-      <!-- Frame -->
-      <rect x="30" y="75" width="510" height="420" rx="14" fill="#d0ebff" fill-opacity="0.3" stroke="#4a9eed" stroke-width="2"/>
+      <!-- Frames -->
+      <rect x="30" y="75" width="510" height="465" rx="14" fill="#d0ebff" fill-opacity="0.3" stroke="#4a9eed" stroke-width="2"/>
       <text x="48" y="102" font-size="18" font-weight="700" style="fill:#1971c2">Mac app (from excalidraw-mac)</text>
+      <a href="#note-server">
+        <rect x="45" y="365" width="480" height="160" rx="12" fill="#d0bfff" fill-opacity="0.3" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="60" y="392" font-size="18" font-weight="700" style="fill:#6741d9">Bun server</text>
+      </a>
 
       <!-- Arrows -->
       <line x1="170" y1="195" x2="170" y2="253" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
-      <line x1="170" y1="325" x2="170" y2="393" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
-      <line x1="280" y1="415" x2="598.1" y2="310.6" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
-      <line x1="600" y1="280" x2="512" y2="280" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
-      <line x1="310" y1="290" x2="282" y2="290" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
-      <line x1="280" y1="450" x2="598" y2="450" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="270" y1="325" x2="358.5" y2="408.6" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="220" y1="410" x2="220" y2="327" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="310" y1="445" x2="262" y2="445" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="511.4" y1="418.7" x2="608.6" y2="326.4" stroke="#1e1e1e" stroke-width="2" marker-start="url(#arr1)" marker-end="url(#arr1)"/>
+      <line x1="525" y1="500" x2="598" y2="500" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
       <line x1="690" y1="255" x2="690" y2="197" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr1)"/>
 
       <!-- Inside the app -->
       <a href="#note-page">
         <rect x="60" y="125" width="220" height="70" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
-        <text x="170" y="155" font-size="18" font-weight="700" text-anchor="middle">Excalidraw page</text>
-        <text x="170" y="179" font-size="15" text-anchor="middle">canvas, AI button</text>
+        <text x="170" y="155" font-size="18" font-weight="700" text-anchor="middle">Web page (React)</text>
+        <text x="170" y="179" font-size="15" text-anchor="middle">canvas + all screens</text>
       </a>
       <a href="#note-shell">
         <rect x="60" y="255" width="220" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
@@ -381,14 +385,14 @@
         <text x="170" y="309" font-size="15" text-anchor="middle">starts the server</text>
       </a>
       <a href="#note-server">
-        <rect x="60" y="395" width="220" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
-        <text x="170" y="425" font-size="18" font-weight="700" text-anchor="middle">Bun server</text>
-        <text x="170" y="449" font-size="15" text-anchor="middle">built in, runs AI</text>
+        <rect x="310" y="410" width="200" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="410" y="440" font-size="18" font-weight="700" text-anchor="middle">generate</text>
+        <text x="410" y="464" font-size="15" text-anchor="middle">runs the Agent</text>
       </a>
       <a href="#note-mcp">
-        <rect x="310" y="255" width="200" height="70" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
-        <text x="410" y="285" font-size="18" font-weight="700" text-anchor="middle">Canvas MCP</text>
-        <text x="410" y="309" font-size="15" text-anchor="middle">read, add, change</text>
+        <rect x="60" y="410" width="200" height="70" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="160" y="440" font-size="18" font-weight="700" text-anchor="middle">Canvas MCP</text>
+        <text x="160" y="464" font-size="15" text-anchor="middle">read, add, change</text>
       </a>
 
       <!-- Outside the app -->
@@ -403,28 +407,28 @@
         <text x="690" y="309" font-size="15" text-anchor="middle">via Agent SDK</text>
       </a>
       <a href="#note-stt">
-        <rect x="600" y="395" width="180" height="70" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
-        <text x="690" y="436" font-size="18" font-weight="700" text-anchor="middle">STT API</text>
+        <rect x="600" y="465" width="180" height="70" rx="10" fill="#ffd8a8" stroke="#d9822b" stroke-width="2"/>
+        <text x="690" y="506" font-size="18" font-weight="700" text-anchor="middle">STT API</text>
       </a>
     </svg>
   </div>
 
   <div class="notes">
     <div class="note" id="note-page" style="--c:#22c55e">
-      <h3>Excalidraw page</h3>
-      <p>畫布頁面（React + Excalidraw），已經有。新增的只有 AI 按鈕和輸入框。</p>
+      <h3>Web page (React)</h3>
+      <p>網頁（React + Excalidraw），畫布已經有，要加 AI 按鈕和輸入框。畫布以外的畫面（首頁、側欄、標題列、狀態列、設定、啟動檢查）也會做在這裡，和畫布在同一個 WKWebView。</p>
     </div>
     <div class="note" id="note-shell" style="--c:#868e96">
       <h3>Swift shell</h3>
-      <p>Mac App 的外殼，已經有。打開 App 時啟動伺服器並給它一組隨機 token，關掉時停掉它。送請求給伺服器和錄音也由它做。</p>
+      <p>Mac App 的外殼，已經有。打開 App 時啟動伺服器並給它一組隨機 token，關掉時停掉它。送請求給伺服器和錄音也由它做。之後只留薄薄一層：視窗、選單、開檔存檔、啟動伺服器、錄音。</p>
     </div>
     <div class="note" id="note-server" style="--c:#8b5cf6">
       <h3>Bun server</h3>
-      <p>包在 App 裡的後端，編成一個獨立程式。收到使用者的話，組上規則，啟動 Agent，把畫布的 MCP 工具接給它。另外負責語音轉文字。</p>
+      <p>包在 App 裡的後端，編成一個獨立程式。<code>generate</code> 收到使用者的話，組上規則，啟動 Agent，把同一個程式裡的畫布 MCP 工具接給它。另外負責語音轉文字。</p>
     </div>
-    <div class="note" id="note-mcp" style="--c:#868e96">
+    <div class="note" id="note-mcp" style="--c:#8b5cf6">
       <h3>Canvas MCP</h3>
-      <p>excalidraw-mac 已經有的 MCP 伺服器。它讓 AI 讀畫布、放新東西、改和刪東西。</p>
+      <p>伺服器裡的一個模組（TypeScript，計畫）。它和 App 保持一條 socket 連線，讓 AI 讀畫布、放新東西、改和刪東西。取代 Claude Code 每次啟動的 Swift <code>excalidraw-mcp</code>。</p>
     </div>
     <div class="note" id="note-cc" style="--c:#d9822b">
       <h3>Claude Code</h3>
@@ -793,13 +797,14 @@
   </div>
 
   <div class="rows">
+    <div class="row"><b>怎麼做</b><span>這些畫面全部用 React 做在 <code>web/</code> 裡，和畫布在同一個 WKWebView；取代 AppKit 寫的首頁和設定視窗（<code>StartWindowController</code>、<code>SettingsWindowController</code>，React 版做好後拿掉）。一套 CSS，整個 App 一種樣式；雲端的 agent 也能在 headless Chromium 裡打開畫面和 Figma 比對。畫面要的資料（最近的筆記、設定、Claude Code 狀態）全部經過外殼，用網頁和外殼之間已經有的訊息管道；網頁不直接連伺服器。</span></div>
     <div class="row"><b>面板的規則</b><span>所有面板一樣大（設計稿 800×584），寬比高大，置中。四邊留白一樣（24），每個灰色區塊的內距一樣（16），寬鬆不擠。放不下時內容上下捲，標題不動。</span></div>
     <div class="row"><b>設定</b><span>外觀（跟系統、淺色、深色，整個 App 一起換，不只畫布）、Claude Code（狀態、位置）、語音輸入（網址、金鑰、模型、測試按鈕）、AI agent（接外部的 MCP 用戶端）。有關閉按鈕。</span></div>
     <div class="row"><b>啟動檢查</b><span>三項檢查、安裝指令、「Check Again」。沒有關閉按鈕，要修好才能用。</span></div>
     <div class="row"><b>畫布上的 AI</b><span>AI 按鈕在工具列最右邊；選了東西，選取框右上角也有一個小的，輸入框打開就消失。輸入框（文字、麥克風、送出）在選取的下面，沒選就在下方中間。</span></div>
     <div class="row"><b>AI 做事時</b><span>交出去的東西變淡、加鎖；下方中間顯示「AI is working…」和取消。做完顯示訊息和復原；失敗顯示訊息和重試。原本右下角的「AI agent connected」拿掉。</span></div>
     <div class="row"><b>一套樣式</b><span>整個 App 一種字型、一組字級、一組圓角、一種線色、一種陰影、一種強調色（Excalidraw 的紫色），存成 Figma 變數。只畫了淺色。</span></div>
-    <div class="row"><b>文字和名字</b><span>介面文字用英文。App 名字還沒定，設計稿先寫「Excalidraw」。</span></div>
+    <div class="row"><b>文字和名字</b><span>介面文字用英文。App 的名字是 Invic（2026-11-27 定的）；設計稿 2026-11-28 也改成 Invic 了。</span></div>
     <div class="row"><b>不做</b><span>帳號和登入畫面、筆記資料庫、用量畫面。筆記就是電腦上的檔案。</span></div>
     <div class="row"><b>Figma</b><span><a href="https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1">設計稿</a>，看「App」頁；舊版本在 archive 頁。</span></div>
   </div>
@@ -808,15 +813,27 @@
   <h2>已經決定</h2>
   <ul class="assume">
     <li>Mac 桌面 App，以 excalidraw-mac 為基礎，程式搬進這個 repo 改。只支援 Apple 晶片。</li>
+    <li>外殼留 Swift，不 fork 官方 Excalidraw，不換 Electrobun（2026-11-28，原因見「讀原始碼和資料查到的」）。畫布繼續用 <code>@excalidraw/excalidraw</code> 套件。</li>
+    <li>畫布以外的畫面全部用 React 做在 <code>web/</code>，和畫布同一個 WKWebView；Swift 只留視窗、選單、開檔存檔、啟動伺服器、錄音。</li>
     <li>畫布用 Excalidraw，用法和一般畫板一樣。</li>
     <li>叫 AI 的方式：App 上固定有一個 AI 按鈕，按下去打字或語音。先選了東西，AI 就知道你指的是那幾個；沒選就是直接下指令。</li>
     <li>AI 用畫布的 MCP 工具直接在畫布上放和改；結果是一般圖形和文字，畫法不規定。</li>
+    <li>畫布的 MCP 改用 TypeScript 寫在伺服器裡：伺服器和 App 的 socket 保持一條連線，在同一個程式裡把工具交給 Agent SDK。</li>
     <li>AI 自己判斷要改掉原本的還是放旁邊；使用者也可以直接說放哪。</li>
     <li>範圍靠提示詞，不加程式限制；不提供「清空畫布」。</li>
     <li>一份筆記是一個一般資料夾：標準的畫布檔加上記憶檔。</li>
     <li>記憶用 Agent SDK 內建的對話紀錄，透過轉接器存在筆記的資料夾裡；每次請求接續這段對話。壓縮交給 SDK 自動做。</li>
     <li>AI 可以照記憶把東西還回來。</li>
     <li>語音輸入一開始就做，用 OpenAI 相容格式的 STT API 和使用者自己的金鑰。</li>
+    <li>先不做深色的樣式（2026-11-28）。</li>
+    <li>記憶檔只放 AI 下次會讀到的內容，不是流水紀錄：對話被壓縮成摘要後，摘要之前的舊內容從檔案拿掉。不另外設保留期限（2026-11-28；SDK 允不允許這樣改還沒實測）。</li>
+    <li>React 的畫面要的資料（最近的筆記、設定、Claude Code 狀態）全部經過 Swift 外殼，用網頁和外殼之間已經有的訊息管道；網頁不直接連伺服器（2026-11-28）。</li>
+    <li>AI 的修改全部做完才一次放上畫布：處理中只有載入動畫；失敗或取消就整份丟掉，畫布不變；成功的話整次修改按一次 ⌘Z 就退回（2026-11-28，做法還沒實驗）。</li>
+    <li>一份筆記的資料夾裡只有一個畫布檔和一個記憶檔。打開時缺畫布檔就補一個空白的；缺記憶檔就從空白的記憶開始，AI 只是不記得以前的事（2026-11-28）。</li>
+    <li>不做「撤回這次 AI 的修改」的按鈕；用 ⌘Z 和「叫 AI 還回來」（2026-11-28）。</li>
+    <li>不加專用的「畫表格」工具；表格排得好不好看不特別處理（2026-11-28）。</li>
+    <li>Swift 的 <code>excalidraw-mcp</code> 不留給 App 外面的 agent：TypeScript 版做好後就拿掉（2026-11-28）。</li>
+    <li>授權簡單處理：把 Agent SDK 列進第三方授權清單，不另外查證（2026-11-28）。</li>
     <li>AI 處理時不鎖畫布，只暫時鎖住交給 AI 的那幾個東西；位置被擋住就自動挪開。</li>
     <li>後端是 Bun 伺服器 + Claude Agent SDK，包在 App 裡。</li>
     <li>Claude Code 用使用者已裝好的那一份；不載入使用者的設定。</li>
@@ -830,20 +847,13 @@
     <li>設定和啟動檢查是視窗中間的面板：一樣大、留白一樣、放不下就上下捲。</li>
     <li>外觀設定套用到整個 App，不只畫布。</li>
     <li>拿掉右下角的「AI agent connected」。</li>
+    <li><code>web/</code> 用 Bun 安裝（<code>bun.lock</code>）；build 和測試仍用 Node 跑，PATH 上要有 Node（^20.19 或 ≥22.12）。</li>
     <li>過時的文件放 docs/archive/。</li>
   </ul>
 
   <!-- 8. Tentative and open -->
   <h2>暫定和還沒決定</h2>
   <ul class="assume">
-    <li>App 的名字。</li>
-    <li>要不要畫一套深色的樣式。</li>
-    <li>畫布檔被單獨搬走、和記憶檔分開時怎麼處理。</li>
-    <li>要不要另外做「撤回這次 AI 的修改」的按鈕，還是用 ⌘Z 和「叫 AI 還回來」就夠。</li>
-    <li>記憶檔保留多久。它會一直變大：實驗裡兩次請求就有約 490 KB。</li>
-    <li>AI 請求中途失敗或被取消時，做到一半的步驟要留著還是全部退回。</li>
-    <li>表格如果排得不好看，要不要加一個專用的「畫表格」工具。</li>
-    <li>授權：見下面「授權要遵守的事」。剩一點文件沒有明寫：把 Agent SDK 函式庫包進發布的 App 裡。</li>
   </ul>
 
   <!-- 9. Tested -->
@@ -857,6 +867,15 @@
       <tr><td>「把這個弄清楚一點」</td><td>成功。原地改成四行的待辦清單</td></tr>
       <tr><td>「變成表格，加總計列，放在待辦下面」</td><td>表格整齊，總計正確。但 AI 把原本那段數字刪掉了：它把「變成」理解成取代</td></tr>
       <tr><td>AI 拿到的工具</td><td>只有我們給的六個</td></tr>
+    </table>
+  </div>
+
+  <div class="table-box">
+    <h3>畫布 MCP 放進伺服器（TypeScript，macOS，2026-11-28）</h3>
+    <table class="verify">
+      <tr><th>項目</th><th>結果</th></tr>
+      <tr><td>伺服器直接連 App 的 socket，用 SDK 的 <code>createSdkMcpServer</code> 給工具</td><td>成功。Claude 在真的 Invic 上畫了圖並讀回來，回傳圖片也可以（<a href="experiments/mcp-in-server.ts">實驗程式</a>）</td></tr>
+      <tr><td>工具清單的行為</td><td>和 Swift 版一樣</td></tr>
     </table>
   </div>
 
@@ -893,6 +912,7 @@
     <table class="verify">
       <tr><th>項目</th><th>結果</th></tr>
       <tr><td>在 WebKit 裡錄音</td><td>有風險。頁面不是從 https 載入時，錄音功能可能不存在或卡住不回應（<a href="https://bugs.webkit.org/show_bug.cgi?id=220184">WebKit 回報</a>）。做法：改由 Swift 外殼錄音</td></tr>
+      <tr><td>Electrobun v2.0.7 能不能取代 Swift 外殼</td><td>不行。缺存檔對話框、系統的最近檔案、網頁當掉的偵測、<code>alert</code>/<code>confirm</code>、全螢幕事件、深淺色 API、資料夾型文件；麥克風、簽章後叫起 Claude Code、Agent SDK 跑在它的工作執行緒，從文件無法確定；只有一個維護者，v2 才三個月。只讀了文件和原始碼，沒有實際跑</td></tr>
       <tr><td>把多個步驟合成一次復原</td><td>Excalidraw 有「晚點一起記」的模式（<a href="https://github.com/excalidraw/excalidraw/blob/v0.18.0/packages/excalidraw/store.ts">原始碼</a>）。讀說明知道的，沒有實際跑過。使用者同時在編輯時會被打亂，所以沒有採用</td></tr>
     </table>
   </div>

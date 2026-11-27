@@ -976,9 +976,9 @@
     {
       "id": "loop",
       "type": "rectangle",
-      "x": 300,
+      "x": 80,
       "y": 272,
-      "width": 470,
+      "width": 760,
       "height": 140,
       "angle": 0,
       "strokeColor": "#868e96",
@@ -1005,7 +1005,7 @@
     {
       "id": "loopLabel",
       "type": "text",
-      "x": 314,
+      "x": 94,
       "y": 278,
       "width": 117.0,
       "height": 18.75,
@@ -1041,7 +1041,7 @@
     {
       "id": "lcc",
       "type": "rectangle",
-      "x": 330,
+      "x": 120,
       "y": 306,
       "width": 160,
       "height": 70,
@@ -1083,7 +1083,7 @@
     {
       "id": "lcc_label",
       "type": "text",
-      "x": 350.6,
+      "x": 140.6,
       "y": 329.75,
       "width": 118.8,
       "height": 22.5,
@@ -1119,13 +1119,13 @@
     {
       "id": "lmcp",
       "type": "rectangle",
-      "x": 590,
+      "x": 380,
       "y": 306,
       "width": 160,
       "height": 70,
       "angle": 0,
-      "strokeColor": "#868e96",
-      "backgroundColor": "#e9ecef",
+      "strokeColor": "#4a9eed",
+      "backgroundColor": "#a5d8ff",
       "fillStyle": "solid",
       "strokeWidth": 2,
       "strokeStyle": "solid",
@@ -1152,6 +1152,14 @@
         {
           "type": "arrow",
           "id": "result"
+        },
+        {
+          "type": "arrow",
+          "id": "sockOut"
+        },
+        {
+          "type": "arrow",
+          "id": "sockBack"
         }
       ],
       "updated": 1,
@@ -1161,10 +1169,10 @@
     {
       "id": "lmcp_label",
       "type": "text",
-      "x": 616.0,
-      "y": 329.75,
-      "width": 108.0,
-      "height": 22.5,
+      "x": 395.2,
+      "y": 318.5,
+      "width": 129.6,
+      "height": 45.0,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -1184,8 +1192,8 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "text": "Canvas MCP",
-      "originalText": "Canvas MCP",
+      "text": "Canvas tools\nin server",
+      "originalText": "Canvas tools\nin server",
       "fontSize": 18,
       "fontFamily": 8,
       "lineHeight": 1.25,
@@ -1197,7 +1205,7 @@
     {
       "id": "call",
       "type": "arrow",
-      "x": 490,
+      "x": 280,
       "y": 326,
       "width": 100,
       "height": 0,
@@ -1247,7 +1255,7 @@
     {
       "id": "result",
       "type": "arrow",
-      "x": 590,
+      "x": 380,
       "y": 356,
       "width": 100,
       "height": 0,
@@ -1297,7 +1305,7 @@
     {
       "id": "callLabel",
       "type": "text",
-      "x": 523,
+      "x": 313,
       "y": 306,
       "width": 33.6,
       "height": 17.5,
@@ -1333,9 +1341,9 @@
     {
       "id": "resultLabel",
       "type": "text",
-      "x": 515,
+      "x": 305,
       "y": 359,
-      "width": 50.4,
+      "width": 50.39999999999999,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -1369,7 +1377,7 @@
     {
       "id": "loopCaption",
       "type": "text",
-      "x": 397,
+      "x": 321.4,
       "y": 386,
       "width": 277.2,
       "height": 17.5,
@@ -1447,6 +1455,220 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null
+    },
+    {
+      "id": "lapp",
+      "type": "rectangle",
+      "x": 640,
+      "y": 306,
+      "width": 160,
+      "height": 70,
+      "angle": 0,
+      "strokeColor": "#868e96",
+      "backgroundColor": "#e9ecef",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 9007,
+      "version": 1,
+      "versionNonce": 10007,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "lapp_label"
+        },
+        {
+          "type": "arrow",
+          "id": "sockOut"
+        },
+        {
+          "type": "arrow",
+          "id": "sockBack"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "lapp_label",
+      "type": "text",
+      "x": 666.0,
+      "y": 329.75,
+      "width": 108.0,
+      "height": 22.5,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9008,
+      "version": 1,
+      "versionNonce": 10008,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "text": "App canvas",
+      "originalText": "App canvas",
+      "fontSize": 18,
+      "fontFamily": 8,
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "lapp"
+    },
+    {
+      "id": "sockOut",
+      "type": "arrow",
+      "x": 540,
+      "y": 326,
+      "width": 100,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9009,
+      "version": 1,
+      "versionNonce": 10009,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "lmcp",
+        "focus": 0,
+        "gap": 1
+      },
+      "endBinding": {
+        "elementId": "lapp",
+        "focus": 0,
+        "gap": 1
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    },
+    {
+      "id": "sockBack",
+      "type": "arrow",
+      "x": 640,
+      "y": 356,
+      "width": 100,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9010,
+      "version": 1,
+      "versionNonce": 10010,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -100,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "lapp",
+        "focus": 0,
+        "gap": 1
+      },
+      "endBinding": {
+        "elementId": "lmcp",
+        "focus": 0,
+        "gap": 1
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    },
+    {
+      "id": "sockLabel",
+      "type": "text",
+      "x": 565,
+      "y": 306,
+      "width": 50.39999999999999,
+      "height": 17.5,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 9011,
+      "version": 1,
+      "versionNonce": 10011,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "text": "socket",
+      "originalText": "socket",
+      "fontSize": 14,
+      "fontFamily": 8,
+      "lineHeight": 1.25,
+      "autoResize": true,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null
     }
   ],
   "appState": {
