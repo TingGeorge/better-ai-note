@@ -1,3 +1,7 @@
+// OUTDATED, fix both when reusing this file:
+// - mcpServers points at the Swift MCP binary inside /Applications/Excalidraw.app (the original app, never touch it);
+// the canvas tools now live in the server, see mcp-in-server.ts.
+// - mcpServersDelivery is "argv"; the measured choice is "initialize", see sdk-options.ts.
 import { query, type SessionKey, type SessionStore, type SessionStoreEntry } from "@anthropic-ai/claude-agent-sdk";
 
 const noteFolder = process.env.NOTE_FOLDER!;

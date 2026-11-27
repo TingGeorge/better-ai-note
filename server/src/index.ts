@@ -7,7 +7,7 @@ type RouteHandler = (request: Request) => Response | Promise<Response>;
 
 const accessToken = Bun.env.ACCESS_TOKEN;
 if (!accessToken) {
-  // Without a token, anyone who finds the server URL could spend the owner's API money
+  // Without a token, any other program on this Mac could make requests on the owner's Claude plan
   throw new Error("ACCESS_TOKEN is not set. Copy .env.example to .env and fill it in.");
 }
 

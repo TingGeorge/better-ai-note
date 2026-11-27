@@ -98,7 +98,7 @@ plutil -lint "$APP/Contents/Info.plist"
 
 echo "== 4/4 Sign (ad-hoc) and zip"
 # Ad-hoc signature: required to run on Apple Silicon. Not notarized, so the
-# first launch of a downloaded copy needs right-click → Open (see README).
+# first launch of a downloaded copy needs right-click → Open.
 codesign --force --deep --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 (cd build && ditto -c -k --keepParent Invic.app Invic-macOS.zip)

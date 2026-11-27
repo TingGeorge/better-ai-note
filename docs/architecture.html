@@ -339,7 +339,8 @@
   <div class="status">
     <div class="s-done"><b>已定</b><span>方向與架構</span></div>
     <div class="s-done"><b>已定</b><span><a href="#screens">畫面</a>（Figma 完成）</span></div>
-    <div class="s-todo"><b>還沒做</b><span>程式（後端只有骨架）</span></div>
+    <div class="s-done"><b>做完</b><span>第 1 部分：程式搬進 repo、改名 Invic</span></div>
+    <div class="s-todo"><b>還沒做</b><span>後端（只有骨架）和之後的部分</span></div>
   </div>
 
   <p class="muted">後端的細節（模組、請求格式、記憶、設定）在<a href="backend-architecture.html">後端架構</a>。資料更新日 2026-11-28。舊方向（iPad、獨立伺服器）的頁面在 archive/ 裡：<a href="archive/ipad-app-architecture.html">iPad App 架構</a>、<a href="archive/backend-architecture.html">後端架構</a>。點圖上的方塊可以跳到它的說明。</p>
@@ -642,7 +643,7 @@
     </div>
     <div class="note" id="note-step5" style="--c:#d9822b">
       <h3>5 Agent edits</h3>
-      <p>AI 用 <code>add_elements</code>、<code>update_elements</code>、<code>delete_elements</code>、<code>add_mermaid</code> 直接在畫布上放和改。等待時畫面顯示載入動畫。</p>
+      <p>AI 用 <code>add_elements</code>、<code>update_elements</code>、<code>delete_elements</code>、<code>add_mermaid</code> 放和改。全部做完才一次放上畫布；失敗或取消就什麼都不放；成功的話整次修改是一個 ⌘Z（2026-11-28 決定，第 5 部分實驗後才知道做法行不行）。等待時畫面顯示載入動畫。</p>
     </div>
     <div class="note" id="note-step6" style="--c:#22c55e">
       <h3>6 Record in memory</h3>
@@ -788,7 +789,7 @@
     </figure>
     <figure>
       <a href="images/screen-settings.png"><img src="images/screen-settings.png" width="1728" height="989" loading="lazy" alt="Settings dialog over the dimmed window"></a>
-      <figcaption>設定：外觀、Claude Code、語音輸入、AI agent。</figcaption>
+      <figcaption>設定：外觀、Claude Code、語音輸入。圖裡的「AI agent」那一區之後會拿掉。</figcaption>
     </figure>
     <figure>
       <a href="images/screen-setup.png"><img src="images/screen-setup.png" width="1728" height="989" loading="lazy" alt="Setup check dialog with three checks and a Check Again button"></a>
@@ -799,11 +800,11 @@
   <div class="rows">
     <div class="row"><b>怎麼做</b><span>這些畫面全部用 React 做在 <code>web/</code> 裡，和畫布在同一個 WKWebView；取代 AppKit 寫的首頁和設定視窗（<code>StartWindowController</code>、<code>SettingsWindowController</code>，React 版做好後拿掉）。一套 CSS，整個 App 一種樣式；雲端的 agent 也能在 headless Chromium 裡打開畫面和 Figma 比對。畫面要的資料（最近的筆記、設定、Claude Code 狀態）全部經過外殼，用網頁和外殼之間已經有的訊息管道；網頁不直接連伺服器。</span></div>
     <div class="row"><b>面板的規則</b><span>所有面板一樣大（設計稿 800×584），寬比高大，置中。四邊留白一樣（24），每個灰色區塊的內距一樣（16），寬鬆不擠。放不下時內容上下捲，標題不動。</span></div>
-    <div class="row"><b>設定</b><span>外觀（跟系統、淺色、深色，整個 App 一起換，不只畫布）、Claude Code（狀態、位置）、語音輸入（網址、金鑰、模型、測試按鈕）、AI agent（接外部的 MCP 用戶端）。有關閉按鈕。</span></div>
+    <div class="row"><b>設定</b><span>外觀（跟系統、淺色、深色，整個 App 一起換，不只畫布；深色先不做）、Claude Code（狀態、位置）、語音輸入（網址、金鑰、模型、測試按鈕）。有關閉按鈕。不支援外面的 agent：「AI agent」那一區（接外部的 MCP 用戶端）等 TypeScript 版的畫布 MCP 能用後，和 Swift 的 MCP 一起拿掉；Figma 的設定畫面和截圖裡還有它。</span></div>
     <div class="row"><b>啟動檢查</b><span>三項檢查、安裝指令、「Check Again」。沒有關閉按鈕，要修好才能用。</span></div>
     <div class="row"><b>畫布上的 AI</b><span>AI 按鈕在工具列最右邊；選了東西，選取框右上角也有一個小的，輸入框打開就消失。輸入框（文字、麥克風、送出）在選取的下面，沒選就在下方中間。</span></div>
-    <div class="row"><b>AI 做事時</b><span>交出去的東西變淡、加鎖；下方中間顯示「AI is working…」和取消。做完顯示訊息和復原；失敗顯示訊息和重試。原本右下角的「AI agent connected」拿掉。</span></div>
-    <div class="row"><b>一套樣式</b><span>整個 App 一種字型、一組字級、一組圓角、一種線色、一種陰影、一種強調色（Excalidraw 的紫色），存成 Figma 變數。只畫了淺色。</span></div>
+    <div class="row"><b>AI 做事時</b><span>交出去的東西變淡、加鎖；下方中間顯示「AI is working…」和取消。做完顯示訊息和復原（就是畫板的 ⌘Z，不另外做）；失敗顯示訊息和重試。原本右下角的「AI agent connected」拿掉。</span></div>
+    <div class="row"><b>一套樣式</b><span>整個 App 一種字型、一組字級、一組圓角、一種線色、一種陰影、一種強調色（藍色 <code>#3C69FD</code>；icon 本身是 <code>#3D6BFF</code>，介面的藍深一點點，白字的對比才夠），存成 Figma 變數。只畫了淺色。</span></div>
     <div class="row"><b>文字和名字</b><span>介面文字用英文。App 的名字是 Invic（2026-11-27 定的）；設計稿 2026-11-28 也改成 Invic 了。</span></div>
     <div class="row"><b>不做</b><span>帳號和登入畫面、筆記資料庫、用量畫面。筆記就是電腦上的檔案。</span></div>
     <div class="row"><b>Figma</b><span><a href="https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1">設計稿</a>，看「App」頁；舊版本在 archive 頁。</span></div>
@@ -817,12 +818,12 @@
     <li>畫布以外的畫面全部用 React 做在 <code>web/</code>，和畫布同一個 WKWebView；Swift 只留視窗、選單、開檔存檔、啟動伺服器、錄音。</li>
     <li>畫布用 Excalidraw，用法和一般畫板一樣。</li>
     <li>叫 AI 的方式：App 上固定有一個 AI 按鈕，按下去打字或語音。先選了東西，AI 就知道你指的是那幾個；沒選就是直接下指令。</li>
-    <li>AI 用畫布的 MCP 工具直接在畫布上放和改；結果是一般圖形和文字，畫法不規定。</li>
+    <li>AI 用畫布的 MCP 工具在畫布上放和改，全部做完才一次放上去（見下面 2026-11-28 那一條）；結果是一般圖形和文字，畫法不規定。</li>
     <li>畫布的 MCP 改用 TypeScript 寫在伺服器裡：伺服器和 App 的 socket 保持一條連線，在同一個程式裡把工具交給 Agent SDK。</li>
     <li>AI 自己判斷要改掉原本的還是放旁邊；使用者也可以直接說放哪。</li>
     <li>範圍靠提示詞，不加程式限制；不提供「清空畫布」。</li>
     <li>一份筆記是一個一般資料夾：標準的畫布檔加上記憶檔。</li>
-    <li>記憶用 Agent SDK 內建的對話紀錄，透過轉接器存在筆記的資料夾裡；每次請求接續這段對話。壓縮交給 SDK 自動做。</li>
+    <li>記憶用 Agent SDK 內建的對話紀錄，透過轉接器存在筆記的資料夾裡；每次請求接續這段對話。壓縮交給 SDK 自動做；壓縮後記憶轉接器把摘要之前的內容從檔案拿掉（還沒實測）。</li>
     <li>AI 可以照記憶把東西還回來。</li>
     <li>語音輸入一開始就做，用 OpenAI 相容格式的 STT API 和使用者自己的金鑰。</li>
     <li>先不做深色的樣式（2026-11-28）。</li>
@@ -854,6 +855,10 @@
   <!-- 8. Tentative and open -->
   <h2>暫定和還沒決定</h2>
   <ul class="assume">
+    <li>Agent 用哪個 Claude 模型。</li>
+    <li>介面的主色要不要改成和 icon 完全一樣的 <code>#3D6BFF</code>（現在是 <code>#3C69FD</code>）。</li>
+    <li>「先改草稿、做完一次套到畫布」行不行得通：第 5 部分實驗。</li>
+    <li>拿掉摘要之前的內容後，SDK 還能不能正常接續記憶檔：做記憶之前先試。</li>
   </ul>
 
   <!-- 9. Tested -->
@@ -913,7 +918,7 @@
       <tr><th>項目</th><th>結果</th></tr>
       <tr><td>在 WebKit 裡錄音</td><td>有風險。頁面不是從 https 載入時，錄音功能可能不存在或卡住不回應（<a href="https://bugs.webkit.org/show_bug.cgi?id=220184">WebKit 回報</a>）。做法：改由 Swift 外殼錄音</td></tr>
       <tr><td>Electrobun v2.0.7 能不能取代 Swift 外殼</td><td>不行。缺存檔對話框、系統的最近檔案、網頁當掉的偵測、<code>alert</code>/<code>confirm</code>、全螢幕事件、深淺色 API、資料夾型文件；麥克風、簽章後叫起 Claude Code、Agent SDK 跑在它的工作執行緒，從文件無法確定；只有一個維護者，v2 才三個月。只讀了文件和原始碼，沒有實際跑</td></tr>
-      <tr><td>把多個步驟合成一次復原</td><td>Excalidraw 有「晚點一起記」的模式（<a href="https://github.com/excalidraw/excalidraw/blob/v0.18.0/packages/excalidraw/store.ts">原始碼</a>）。讀說明知道的，沒有實際跑過。使用者同時在編輯時會被打亂，所以沒有採用</td></tr>
+      <tr><td>把多個步驟合成一次復原</td><td>Excalidraw 有「晚點一起記」的模式（<a href="https://github.com/excalidraw/excalidraw/blob/v0.18.0/packages/excalidraw/store.ts">原始碼</a>）。讀說明知道的，沒有實際跑過。使用者同時在編輯時會被打亂，所以沒有採用。2026-11-28 改定：整次 AI 修改是一個 ⌘Z，做法是 AI 先改一份草稿，做完用一次 <code>updateScene</code> 套到畫布（還沒試，第 5 部分實驗）</td></tr>
     </table>
   </div>
 

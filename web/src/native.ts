@@ -44,8 +44,6 @@ declare global {
   }
 }
 
-export const isNative = () => !!window.webkit?.messageHandlers?.native;
-
 export function postNative(msg: NativeMessage) {
   window.webkit?.messageHandlers?.native?.postMessage(msg);
 }

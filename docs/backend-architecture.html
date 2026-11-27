@@ -574,7 +574,7 @@
     </div>
     <div class="note" id="c-prompt" style="--c:#4a9eed">
       <h3>Prompt builder <span class="tag t-ok">已定</span></h3>
-      <p>一個函式。把規則和使用者的話組成給 AI 的提示詞；沒輸入需求時用「你自己判斷」那份。</p>
+      <p>一個函式。組出兩份：固定的規則（系統提示）和這次請求的訊息（使用者的話、選了哪些、截圖）；沒輸入需求時用「你自己判斷」那份。</p>
     </div>
     <div class="note" id="c-agent" style="--c:#4a9eed">
       <h3>Agent <span class="tag t-ok">已定</span></h3>
@@ -650,8 +650,8 @@
       <tr><th>檔案</th><th>種類</th><th>做什麼</th><th>對外的函式 <span class="tag t-ok">已定</span></th></tr>
       <tr><td><code>src/index.ts</code></td><td>入口</td><td>檢查 token、分派</td><td>—</td></tr>
       <tr><td><code>src/generate/index.ts</code></td><td>主檔</td><td>一次 AI 請求的整個流程</td><td><code>generate(request): Response</code></td></tr>
-      <tr><td><code>src/generate/prompt.ts</code></td><td>小幫手</td><td>組提示詞</td><td><code>buildPrompt({ request, selectedIds, screenshot })</code></td></tr>
-      <tr><td><code>src/generate/agent.ts</code></td><td>小幫手</td><td>啟動 Agent、接 MCP、檢查工具、可中止</td><td><code>runAgent({ prompt, noteFolder, signal })</code></td></tr>
+      <tr><td><code>src/generate/prompt.ts</code></td><td>小幫手</td><td>組出 <code>rules</code> 和 <code>content</code></td><td><code>buildPrompt({ request, selectedIds, screenshot })</code></td></tr>
+      <tr><td><code>src/generate/agent.ts</code></td><td>小幫手</td><td>啟動 Agent、接 MCP、檢查工具、可中止</td><td><code>runAgent({ rules, content, noteFolder, signal })</code></td></tr>
       <tr><td><code>src/generate/memory.ts</code></td><td>小幫手</td><td>記憶轉接器、找出這份筆記的對話</td><td><code>openMemory(noteFolder)</code></td></tr>
       <tr><td><code>src/…/index.ts</code>（畫布模組，名稱還沒定）</td><td>主檔</td><td>六個畫布工具、連 App 的 socket</td><td>還沒定</td></tr>
       <tr><td><code>src/transcribe/index.ts</code></td><td>主檔</td><td>音檔 → 文字</td><td><code>transcribe(request): Response</code></td></tr>
@@ -661,6 +661,7 @@
   </div>
 
   <div class="rows">
+    <div class="row"><b><code>rules</code> 和 <code>content</code></b><span>2a 定的：<code>rules</code> 是固定的系統提示；<code>content</code> 是這次請求的訊息（使用者的話、選取的 id、截圖）。分開是因為帶圖片一定要用串流輸入，而且系統提示每次要一模一樣，快取才命中。</span></div>
     <div class="row"><b>呼叫方向</b><span>主檔 → 小幫手 → 更底層的小幫手（<code>agent.ts</code> 用 <code>memory.ts</code>，也用畫布模組的主檔），不往回叫。別的模組只引用主檔。<span class="tag t-ok">已定</span></span></div>
   </div>
 
@@ -768,7 +769,7 @@
     </div>
     <div class="note" id="f-step6" style="--c:#4a9eed">
       <h3>6 Agent works</h3>
-      <p>AI 讀畫布、放和改東西，每一步直接出現在畫布上。對話紀錄邊做邊寫進筆記資料夾。App 斷線或按取消，就叫 Agent 停下，正在跑的畫布工具也要停。</p>
+      <p>AI 讀畫布、放和改東西，每一步直接出現在畫布上（<b>2026-11-28 改了</b>：改成全部做完才一次放上畫布；第 5 部分實驗後重寫這一段）。對話紀錄邊做邊寫進筆記資料夾。App 斷線或按取消，就叫 Agent 停下，正在跑的畫布工具也要停。</p>
     </div>
     <div class="note" id="f-step7" style="--c:#f08c00">
       <h3>7 Log</h3>
@@ -788,7 +789,7 @@
     </div>
     <div class="note" id="f-app" style="--c:#868e96">
       <h3>App canvas（第 6 步裡）</h3>
-      <p>Invic 視窗裡的畫布。每一步改動馬上看得到。</p>
+      <p>Invic 視窗裡的畫布。每一步改動馬上看得到（<b>2026-11-28 改了</b>：改成全部做完才一次放上畫布；第 5 部分實驗後重寫這一段）。</p>
     </div>
   </div>
 
@@ -834,14 +835,14 @@ Authorization: Bearer &lt;token&gt;
       <tr><td><code>unexpected_tools</code></td><td>500</td><td>Agent 拿到我們以外的工具</td><td>Failed，請使用者更新</td></tr>
       <tr><td><code>usage_limit</code></td><td>429</td><td>訂閱額度用完 <span class="tag t-unv">未驗證</span> SDK 怎麼回報額度用完、能不能和沒登入分開</td><td>Failed，顯示原因</td></tr>
       <tr><td><code>agent_failed</code></td><td>500</td><td>Agent 中途出錯或超過步數</td><td>Failed，可以再試一次</td></tr>
-      <tr><td>（取消）</td><td>—</td><td>App 斷線或按取消</td><td>沒有回應可送，只記 log</td></tr>
+      <tr><td><code>cancelled</code></td><td>—</td><td>App 斷線或按取消（2a 加的）</td><td>記進 log；App 斷線時收不到回應</td></tr>
     </table>
   </div>
 
   <div class="rows">
     <div class="row"><b>不自動重試</b><span>重試會多花一次額度，由使用者決定。<span class="tag t-ok">已定</span></span></div>
     <div class="row" id="row-busy"><b>一次只跑一個</b><span><span class="tag t-ok">已定</span> 兩個請求同時寫同一個記憶檔會寫壞；一次只開一份筆記，所以用最簡單的做法：整個伺服器一次一個，第二個回 <code>busy</code>。</span></div>
-    <div class="row"><b>做到一半失敗或取消</b><span>2026-11-28 決定：AI 的修改先放在草稿裡，全部做完才一次放上畫布。失敗或取消就把草稿丟掉，畫布不變。做法還沒實驗，上面「每一步直接出現在畫布上」的說法要跟著改。</span></div>
+    <div class="row"><b>做到一半失敗或取消</b><span>2026-11-28 決定：AI 的修改先放在草稿裡，全部做完才一次放上畫布。失敗或取消就把草稿丟掉，畫布不變。做法還沒實驗；上面標了「2026-11-28 改了」的「每一步直接出現在畫布上」，第 5 部分實驗後重寫。</span></div>
     <div class="row"><b>取消要傳到工具</b><span><span class="tag t-ok">已定</span> 每個畫布工具都把 <code>extra.signal</code> 交給 socket 那一層。工具跑在伺服器自己裡面，請求取消後不會自己停：實驗裡沒做這件事，取消 3 秒後還是畫上去了。</span></div>
   </div>
 
@@ -859,6 +860,7 @@ Authorization: Bearer &lt;token&gt;
       <tr><td>中止</td><td>請求的 <code>signal</code>；畫布工具用 <code>extra.signal</code></td><td><span class="tag t-unv">未驗證</span> 只測過斷線時 <code>signal</code> 會響，還沒測 Agent 真的停下；只 <code>abort()</code>、不先 <code>interrupt()</code> 也還沒測</td></tr>
       <tr><td>最多幾步 <code>maxTurns</code></td><td>12（實驗時用的值）</td><td><span class="tag t-ok">已定</span></td></tr>
       <tr><td>模型</td><td>還沒決定；會明確寫出來，不用預設值</td><td>還沒決定</td></tr>
+      <tr><td>系統提示和快取</td><td>系統提示只放固定的規則文字；這次請求才有的東西（使用者的話、選了哪些、截圖）都放在訊息裡，不然每次都從頭重算。每次回應的 <code>cache_read_input_tokens</code> 寫進 log，看命中多少。快取有效 1 小時（使用者說的，沒另外查證）</td><td><span class="tag t-ok">已定</span> 命中率 <span class="tag t-unv">未驗證</span></td></tr>
     </table>
   </div>
 
@@ -1152,6 +1154,7 @@ audio = &lt;the recording&gt;</code></pre>
       <tr><td>AI 用了哪些工具（依序）</td></tr>
       <tr><td>幾步</td></tr>
       <tr><td>花多久</td></tr>
+      <tr><td>快取讀了多少 token（<code>cache_read_input_tokens</code>）</td></tr>
       <tr><td>結果（<code>done</code> 或錯誤種類）</td></tr>
       <tr><td>AI 最後說的話</td></tr>
     </table>
@@ -1173,7 +1176,7 @@ audio = &lt;the recording&gt;</code></pre>
       <tr><th>舊版</th><th>現在</th></tr>
       <tr><td>兩個模組 <code>generate/</code>、<code>transcribe/</code>；<code>index.ts</code> 入口；<code>log.ts</code> 共用；不做外部服務模組</td><td>多一個畫布工具的模組（2026-11-28）；其他不變</td></tr>
       <tr><td>iPad 把圈選的圖片送上來</td><td>外殼附一張截圖；畫布的資料 AI 自己用 <code>get_scene</code> 讀</td></tr>
-      <tr><td>SSE 逐字串流（<code>delta</code>、<code>done</code>）</td><td>不串流，做完回一次；每一步直接出現在畫布上</td></tr>
+      <tr><td>SSE 逐字串流（<code>delta</code>、<code>done</code>）</td><td>不串流，做完回一次；每一步直接出現在畫布上（<b>2026-11-28 改了</b>：改成全部做完才一次放上畫布；第 5 部分實驗後重寫）</td></tr>
       <tr><td><code>POST /revise</code></td><td>拿掉。追問也是 <code>/generate</code>，靠記憶</td></tr>
       <tr><td>Typed block（table、chart…）由 App 畫</td><td>拿掉。AI 直接放一般圖形和文字</td></tr>
       <tr><td>工具 <code>calc</code>、<code>check block</code></td><td>拿掉。改用畫布 MCP 的六個工具；看到 AI 算錯再加</td></tr>

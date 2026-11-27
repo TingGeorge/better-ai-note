@@ -19,11 +19,21 @@ Read `docs/handoff.md` first: it says what is done, what is next, and what canno
 ## How the owner wants the work split
 
 - The main session discusses and plans with the owner; it does not write the implementation itself.
-- Coding: a subagent on Opus, effort high.
-- Review of each finished part: a separate subagent on Opus, effort xhigh. Give it the code, not your conclusion. Fix what it finds before the next part.
-- Other work: pick whatever subagent fits (pages: Opus, effort medium; Figma work: Fable, effort low or medium).
+- Match the model to the task; not everything needs Opus.
+- Coding that needs real logic: a subagent on Opus, effort high.
+- Simple tasks (small edits, renames, mechanical changes): a subagent on Sonnet.
+- Writing tests: Opus, effort high or medium; simple tests: Sonnet.
+- Review of each finished part: a separate subagent on Opus, effort xhigh. Give it the code, not your conclusion. Fix what it finds, then commit once for that part, before the next part.
+- Other work: pick whatever subagent fits (pages: Opus, effort medium; Figma work: only when the owner asks for it, with the model they name, otherwise Opus or Sonnet).
 - When tasks are different in nature and independent, run several subagents in parallel. Two writers never touch the same files; work that depends on another result waits.
 - If your environment cannot set a subagent's model or effort, say so to the owner instead of silently using something else.
+
+## The backend follows the owner's design
+
+- Build `server/` the way `docs/backend-architecture.html` and `docs/handoff.md` describe it. The owner cares most about the backend design and reviews it in detail.
+- When an approach marked untested turns out not to work: first look for a way yourself (search the web for how others solved it, try alternatives).
+- A fix that only changes frontend code: go ahead, and record it in the handoff.
+- A fix that would conflict with the backend design, or no fix at all: stop and ask the owner. Do not drift far from the architecture documents.
 
 ## Checks
 
