@@ -666,7 +666,7 @@
     <h3>端點</h3>
     <table>
       <tr><th>端點</th><th>送出</th><th>回來</th></tr>
-      <tr><td><code>POST /generate</code></td><td>使用者的話、選了什麼、一張截圖</td><td>完成或失敗</td></tr>
+      <tr><td><code>POST /generate</code></td><td>使用者的話、選了什麼、一張截圖、用哪個模型</td><td>完成或失敗</td></tr>
       <tr><td><code>POST /transcribe</code></td><td>音檔</td><td>文字（聽寫：文字先放回輸入框，確認後才送出；音檔轉完就丟）</td></tr>
     </table>
   </div>
@@ -789,7 +789,7 @@
     </figure>
     <figure>
       <a href="images/screen-settings.png"><img src="images/screen-settings.png" width="1728" height="989" loading="lazy" alt="Settings dialog over the dimmed window"></a>
-      <figcaption>設定：外觀、Claude Code、語音輸入。圖裡的「AI agent」那一區之後會拿掉。</figcaption>
+      <figcaption>設定：外觀、Claude Code、語音輸入。</figcaption>
     </figure>
     <figure>
       <a href="images/screen-setup.png"><img src="images/screen-setup.png" width="1728" height="989" loading="lazy" alt="Setup check dialog with three checks and a Check Again button"></a>
@@ -800,7 +800,7 @@
   <div class="rows">
     <div class="row"><b>怎麼做</b><span>這些畫面全部用 React 做在 <code>web/</code> 裡，和畫布在同一個 WKWebView；取代 AppKit 寫的首頁和設定視窗（<code>StartWindowController</code>、<code>SettingsWindowController</code>，React 版做好後拿掉）。一套 CSS，整個 App 一種樣式；雲端的 agent 也能在 headless Chromium 裡打開畫面和 Figma 比對。畫面要的資料（最近的筆記、設定、Claude Code 狀態）全部經過外殼，用網頁和外殼之間已經有的訊息管道；網頁不直接連伺服器。</span></div>
     <div class="row"><b>面板的規則</b><span>所有面板一樣大（設計稿 800×584），寬比高大，置中。四邊留白一樣（24），每個灰色區塊的內距一樣（16），寬鬆不擠。放不下時內容上下捲，標題不動。</span></div>
-    <div class="row"><b>設定</b><span>外觀（跟系統、淺色、深色，整個 App 一起換，不只畫布；深色先不做）、Claude Code（狀態、位置）、語音輸入（網址、金鑰、模型、測試按鈕）。有關閉按鈕。不支援外面的 agent：「AI agent」那一區（接外部的 MCP 用戶端）等 TypeScript 版的畫布 MCP 能用後，和 Swift 的 MCP 一起拿掉；Figma 的設定畫面和截圖裡還有它。</span></div>
+    <div class="row"><b>設定</b><span>外觀（跟系統、淺色、深色，整個 App 一起換，不只畫布；深色先不做）、Claude Code（狀態、位置、模型：Haiku／Sonnet／Opus 三段切換，預設 Sonnet）、語音輸入（網址、金鑰、模型、測試按鈕）。有關閉按鈕。不支援外面的 agent：原本的「AI agent」那一區 2026-11-28 已從 Figma 拿掉；程式裡對應的設定項目等 TypeScript 版的畫布工具做好後跟 Swift 的 MCP 一起拿掉。</span></div>
     <div class="row"><b>啟動檢查</b><span>三項檢查、安裝指令、「Check Again」。沒有關閉按鈕，要修好才能用。</span></div>
     <div class="row"><b>畫布上的 AI</b><span>AI 按鈕在工具列最右邊；選了東西，選取框右上角也有一個小的，輸入框打開就消失。輸入框（文字、麥克風、送出）在選取的下面，沒選就在下方中間。</span></div>
     <div class="row"><b>AI 做事時</b><span>交出去的東西變淡、加鎖；下方中間顯示「AI is working…」和取消。做完顯示訊息和復原（就是畫板的 ⌘Z，不另外做）；失敗顯示訊息和重試。原本右下角的「AI agent connected」拿掉。</span></div>
@@ -835,6 +835,7 @@
     <li>不加專用的「畫表格」工具；表格排得好不好看不特別處理（2026-11-28）。</li>
     <li>Swift 的 <code>excalidraw-mcp</code> 不留給 App 外面的 agent：TypeScript 版做好後就拿掉（2026-11-28）。</li>
     <li>授權簡單處理：把 Agent SDK 列進第三方授權清單，不另外查證（2026-11-28）。</li>
+    <li>Agent 用哪個 Claude 模型由使用者在設定裡選：Haiku、Sonnet、Opus，預設 Sonnet。Swift 外殼存這個值，每次 <code>/generate</code> 請求帶給伺服器；改了不用重啟伺服器。換模型後的下一次請求要重建一次快取（2026-11-28）。</li>
     <li>AI 處理時不鎖畫布，只暫時鎖住交給 AI 的那幾個東西；位置被擋住就自動挪開。</li>
     <li>後端是 Bun 伺服器 + Claude Agent SDK，包在 App 裡。</li>
     <li>Claude Code 用使用者已裝好的那一份；不載入使用者的設定。</li>
@@ -855,7 +856,6 @@
   <!-- 8. Tentative and open -->
   <h2>暫定和還沒決定</h2>
   <ul class="assume">
-    <li>Agent 用哪個 Claude 模型。</li>
     <li>介面的主色要不要改成和 icon 完全一樣的 <code>#3D6BFF</code>（現在是 <code>#3C69FD</code>）。</li>
     <li>「先改草稿、做完一次套到畫布」行不行得通：第 5 部分實驗。</li>
     <li>拿掉摘要之前的內容後，SDK 還能不能正常接續記憶檔：做記憶之前先試。</li>

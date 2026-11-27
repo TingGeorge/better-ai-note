@@ -4,7 +4,7 @@
 //
 // Run from a folder where @anthropic-ai/claude-agent-sdk 0.3.332 (and its zod 4 and
 // @modelcontextprotocol/sdk 1.32) resolve; they are not in server/package.json yet:
-//   EXCALIDRAW_MAC_HOME=<short dir holding bridge.sock> CLAUDE_PATH=~/.local/bin/claude \
+//   INVIC_HOME=<short dir holding bridge.sock> CLAUDE_PATH=~/.local/bin/claude \
 //     bun mcp-in-server.ts <mode> [arg]
 // The socket path must stay under 104 bytes (macOS), so use a short dir such as /tmp/invic-exp.
 // Modes without a model turn: socket, mcp, share, restart. With haiku: list <full|noTools|noAllowed>,
@@ -48,9 +48,9 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { Socket } from "bun";
 import { z } from "zod";
 
-const HOME = Bun.env.EXCALIDRAW_MAC_HOME;
+const HOME = Bun.env.INVIC_HOME;
 if (!HOME) {
-  throw new Error("set EXCALIDRAW_MAC_HOME to the folder that holds the app's bridge.sock");
+  throw new Error("set INVIC_HOME to the folder that holds the app's bridge.sock");
 }
 const SOCKET_PATH = `${HOME}/bridge.sock`;
 const CLAUDE_PATH = Bun.env.CLAUDE_PATH ?? `${Bun.env.HOME}/.local/bin/claude`;

@@ -428,17 +428,17 @@
   <div class="confirm">
     <h3>2026-11-27 確認的 11 件事 <span class="tag t-ok">已定</span></h3>
     <ol>
-      <li><a href="#req-shape"><code>/generate</code> 的請求帶四樣</a>：使用者的話、筆記資料夾、按下去當時選了哪些東西、那一刻的截圖。</li>
+      <li><a href="#req-shape"><code>/generate</code> 的請求帶四樣</a>：使用者的話、筆記資料夾、按下去當時選了哪些東西、那一刻的截圖。2026-11-28 加了第五樣：用哪個模型。</li>
       <li><a href="#errors">回應和錯誤的種類</a>（一張表）。</li>
       <li><a href="#row-busy">同一時間只跑一個 AI 請求</a>，第二個回 <code>busy</code>。</li>
       <li><a href="#row-newnote">新筆記一開始就先選位置、建資料夾</a>，這樣記憶一開始就有地方放。</li>
       <li><a href="#row-onefile">記憶檔只有一個</a>：<code>memory.jsonl</code>。</li>
-      <li><a href="#row-restart">設定由 Swift 外殼在啟動伺服器時用環境變數給</a>；使用者改了設定，外殼就重新啟動伺服器。</li>
+      <li><a href="#row-restart">設定由 Swift 外殼在啟動伺服器時用環境變數給</a>；使用者改了設定，外殼就重新啟動伺服器。模型除外：它跟著每次請求送，改了不用重啟（2026-11-28）。</li>
       <li><a href="#row-ownfolder">這個 App 用自己的資料夾和 socket</a>，不和原本的 Excalidraw App 共用。</li>
       <li><a href="#row-setupcheck">Setup check 由 Swift 外殼做</a>，伺服器維持兩個端點。</li>
       <li><a href="#c-prompts">提示詞是文字檔，編進程式裡</a>。</li>
       <li><a href="#row-logwords">Log 會記使用者說的那句話</a>。</li>
-      <li><a href="#agent-settings">Agent 最多 12 步；用哪個模型還沒決定</a>。</li>
+      <li><a href="#agent-settings">Agent 最多 12 步</a>。模型由使用者在設定裡選（Haiku／Sonnet／Opus，預設 Sonnet），<a href="#row-model">每次請求帶過來</a>（2026-11-28 決定）。</li>
     </ol>
   </div>
 
@@ -614,7 +614,7 @@
     </div>
     <div class="note" id="c-app" style="--c:#868e96">
       <h3>App canvas</h3>
-      <p>Invic 視窗裡的畫布。socket 在 App 自己的資料夾裡，伺服器靠 <code>EXCALIDRAW_MAC_HOME</code> 找到它。</p>
+      <p>Invic 視窗裡的畫布。socket 在 App 自己的資料夾裡，伺服器靠 <code>INVIC_HOME</code> 找到它。</p>
     </div>
     <div class="note" id="c-models" style="--c:#868e96">
       <h3>Claude models</h3>
@@ -651,7 +651,7 @@
       <tr><td><code>src/index.ts</code></td><td>入口</td><td>檢查 token、分派</td><td>—</td></tr>
       <tr><td><code>src/generate/index.ts</code></td><td>主檔</td><td>一次 AI 請求的整個流程</td><td><code>generate(request): Response</code></td></tr>
       <tr><td><code>src/generate/prompt.ts</code></td><td>小幫手</td><td>組出 <code>rules</code> 和 <code>content</code></td><td><code>buildPrompt({ request, selectedIds, screenshot })</code></td></tr>
-      <tr><td><code>src/generate/agent.ts</code></td><td>小幫手</td><td>啟動 Agent、接 MCP、檢查工具、可中止</td><td><code>runAgent({ rules, content, noteFolder, signal })</code></td></tr>
+      <tr><td><code>src/generate/agent.ts</code></td><td>小幫手</td><td>啟動 Agent、接 MCP、檢查工具、可中止</td><td><code>runAgent({ rules, content, noteFolder, model, signal })</code></td></tr>
       <tr><td><code>src/generate/memory.ts</code></td><td>小幫手</td><td>記憶轉接器、找出這份筆記的對話</td><td><code>openMemory(noteFolder)</code></td></tr>
       <tr><td><code>src/…/index.ts</code>（畫布模組，名稱還沒定）</td><td>主檔</td><td>六個畫布工具、連 App 的 socket</td><td>還沒定</td></tr>
       <tr><td><code>src/transcribe/index.ts</code></td><td>主檔</td><td>音檔 → 文字</td><td><code>transcribe(request): Response</code></td></tr>
@@ -749,7 +749,7 @@
   <div class="notes">
     <div class="note" id="f-step1" style="--c:#22c55e">
       <h3>1 Request in</h3>
-      <p>Swift 外殼送 <code>POST /generate</code>，帶 token、使用者的話、筆記資料夾、選了哪些東西、截圖。</p>
+      <p>Swift 外殼送 <code>POST /generate</code>，帶 token、使用者的話、筆記資料夾、選了哪些東西、截圖、用哪個模型。</p>
     </div>
     <div class="note" id="f-step2" style="--c:#22c55e">
       <h3>2 Check token</h3>
@@ -803,7 +803,8 @@ Authorization: Bearer &lt;token&gt;
   "request": "做一張長條圖，放右邊",
   "noteFolder": "/Users/me/Notes/Statistics HW",
   "selectedIds": ["a1", "b2"],
-  "screenshot": "iVBORw0KGgo…"
+  "screenshot": "iVBORw0KGgo…",
+  "model": "sonnet"
 }</code></pre>
     </div>
     <div>
@@ -821,6 +822,7 @@ Authorization: Bearer &lt;token&gt;
     <div class="row"><b>為什麼帶 <code>selectedIds</code></b><span><span class="tag t-ok">已定</span> 畫布不鎖，從按下去到 AI 讀畫布之間，選取可能已經變了。沒選東西就是空陣列。</span></div>
     <div class="row"><b>為什麼帶 <code>screenshot</code></b><span><span class="tag t-ok">已定</span> PNG，放在 JSON 裡的 base64 字串，長寬設上限。有選取就截選取範圍加一點邊，沒選取就截目前看到的畫面；由 Swift 外殼請畫布頁面輸出。交給 Agent SDK 時本來就要 base64，所以伺服器原封不動轉交。手繪和貼上的圖片只有看圖才懂，附上就不用靠 AI 自己想到去看。多花的 token 很少。</span></div>
     <div class="row"><b>截圖照存進記憶檔</b><span><span class="tag t-ok">已定</span> 2026-11-28 改的：圖片照原樣存，不換成文字。原因：快取是從頭比對的，把圖換成字會讓上一次請求的整段工具呼叫每次都對不上快取、用原價重算；快取有效 1 小時，連續叫 AI 幾乎都在有效期內。照存也不違反 SDK「讀出來要和存進去一樣」的規定，還少寫一段程式。代價是檔案比較大；壓縮後摘要之前的舊內容（連同舊圖）會從檔案拿掉，所以有上限。<code>render_image</code> 回傳的圖也一樣照存。</span></div>
+    <div class="row" id="row-model"><b><code>model</code></b><span><span class="tag t-ok">已定</span> 2026-11-28 加的。只能是 <code>haiku</code>、<code>sonnet</code>、<code>opus</code>（SDK 認得的短名字）。使用者在設定的 Claude Code 那一區選，預設 Sonnet；值由 Swift 外殼和其他設定一起存，送請求時由外殼加上。伺服器沒有預設值：少了或不是這三個就回 <code>bad_request</code>。不放環境變數，改了也不重啟伺服器。</span></div>
     <div class="row"><b>畫布的資料不放進請求</b><span>每個東西的位置、大小、文字，AI 自己用 <code>get_scene</code> 讀；改完想檢查結果時用 <code>render_image</code> 再看一次。<span class="tag t-ok">已定</span></span></div>
   </div>
 
@@ -828,7 +830,7 @@ Authorization: Bearer &lt;token&gt;
     <h3>錯誤的種類 <span class="tag t-ok">已定</span></h3>
     <table>
       <tr><th>種類</th><th>HTTP</th><th>什麼時候</th><th>畫面上</th></tr>
-      <tr><td><code>bad_request</code></td><td>400</td><td>少欄位，或筆記資料夾不存在</td><td>Failed</td></tr>
+      <tr><td><code>bad_request</code></td><td>400</td><td>少欄位、筆記資料夾不存在，或 <code>model</code> 不是那三個之一</td><td>Failed</td></tr>
       <tr><td><code>unauthorized</code></td><td>401</td><td>token 不對</td><td>不該發生</td></tr>
       <tr><td><code>busy</code></td><td>409</td><td>已經有一個 AI 請求在跑</td><td>Failed（按鈕平常已經藏起來）</td></tr>
       <tr><td><code>claude_code_unavailable</code></td><td>503</td><td>找不到 Claude Code、沒登入、啟動失敗</td><td>狀態列顯示問題，打開 Setup check</td></tr>
@@ -859,8 +861,8 @@ Authorization: Bearer &lt;token&gt;
       <tr><td>記憶 <code>sessionStore</code> + <code>resume</code></td><td>接續這份筆記的對話</td><td><span class="tag t-ok">已定</span></td></tr>
       <tr><td>中止</td><td>請求的 <code>signal</code>；畫布工具用 <code>extra.signal</code></td><td><span class="tag t-unv">未驗證</span> 只測過斷線時 <code>signal</code> 會響，還沒測 Agent 真的停下；只 <code>abort()</code>、不先 <code>interrupt()</code> 也還沒測</td></tr>
       <tr><td>最多幾步 <code>maxTurns</code></td><td>12（實驗時用的值）</td><td><span class="tag t-ok">已定</span></td></tr>
-      <tr><td>模型</td><td>還沒決定；會明確寫出來，不用預設值</td><td>還沒決定</td></tr>
-      <tr><td>系統提示和快取</td><td>系統提示只放固定的規則文字；這次請求才有的東西（使用者的話、選了哪些、截圖）都放在訊息裡，不然每次都從頭重算。每次回應的 <code>cache_read_input_tokens</code> 寫進 log，看命中多少。快取有效 1 小時（使用者說的，沒另外查證）</td><td><span class="tag t-ok">已定</span> 命中率 <span class="tag t-unv">未驗證</span></td></tr>
+      <tr><td>模型 <code>model</code></td><td>請求裡的 <code>model</code>（<code>haiku</code>、<code>sonnet</code>、<code>opus</code>），每次明確交給 SDK，不用 SDK 的預設值。在 Mac 上量過：三個短名字分別對到 claude-haiku-5-5、claude-sonnet-5-5、claude-opus-5-5。伺服器自己先檢查名字，因為 SDK 收到不認得的名字不會一開始就報錯：量過，執行「成功」結束，但 <code>is_error: true</code>、<code>model_not_found</code></td><td><span class="tag t-ok">已定</span></td></tr>
+      <tr><td>系統提示和快取</td><td>系統提示只放固定的規則文字；這次請求才有的東西（使用者的話、選了哪些、截圖）都放在訊息裡，不然每次都從頭重算。每次回應的 <code>cache_read_input_tokens</code> 寫進 log，看命中多少。快取有效 1 小時（使用者說的，沒另外查證）。快取是每個模型各一份：使用者換了模型，下一次請求會重建一次快取，其他不變</td><td><span class="tag t-ok">已定</span> 命中率 <span class="tag t-unv">未驗證</span></td></tr>
     </table>
   </div>
 
@@ -1085,7 +1087,7 @@ audio = &lt;the recording&gt;</code></pre>
   <text x="206" y="196.25" font-size="15" style="fill:#1e1e1e">ACCESS_TOKEN</text>
   <text x="206" y="215" font-size="15" style="fill:#1e1e1e">PORT</text>
   <text x="206" y="233.75" font-size="15" style="fill:#1e1e1e">CLAUDE_CODE_PATH</text>
-  <text x="206" y="252.5" font-size="15" style="fill:#1e1e1e">EXCALIDRAW_MAC_HOME</text>
+  <text x="206" y="252.5" font-size="15" style="fill:#1e1e1e">INVIC_HOME</text>
   <text x="206" y="271.25" font-size="15" style="fill:#1e1e1e">STT_*</text>
   <text x="206" y="290" font-size="15" style="fill:#1e1e1e">LOG_DIR</text>
 </svg>
@@ -1121,7 +1123,7 @@ audio = &lt;the recording&gt;</code></pre>
       <tr><td><code>ACCESS_TOKEN</code></td><td>每個請求要帶的一串亂數，擋掉同一台電腦上其他程式</td><td>外殼每次啟動時產生</td><td><span class="tag t-ok">已定</span></td></tr>
       <tr><td><code>PORT</code></td><td>伺服器聽的埠</td><td>外殼挑一個空的（自己手動跑時用 3000）</td><td><span class="tag t-ok">已定</span></td></tr>
       <tr><td><code>CLAUDE_CODE_PATH</code></td><td>Claude Code 在哪</td><td>外殼找（常見位置，再問登入 shell），或使用者在設定裡指定</td><td><span class="tag t-ok">已定</span></td></tr>
-      <tr><td><code>EXCALIDRAW_MAC_HOME</code></td><td>這個 App 自己的資料夾（裡面有連到畫布的 socket）。伺服器的畫布模組自己用它找 socket；以前的 <code>CANVAS_MCP_PATH</code> 拿掉了</td><td>外殼</td><td><span class="tag t-ok">已定</span></td></tr>
+      <tr><td><code>INVIC_HOME</code></td><td>這個 App 自己的資料夾（裡面有連到畫布的 socket）。伺服器的畫布模組自己用它找 socket；以前的 <code>CANVAS_MCP_PATH</code> 拿掉了</td><td>外殼</td><td><span class="tag t-ok">已定</span></td></tr>
       <tr><td><code>STT_BASE_URL</code>、<code>STT_API_KEY</code>、<code>STT_MODEL</code></td><td>語音轉文字的設定</td><td>使用者在設定裡填</td><td><span class="tag t-ok">已定</span>（名稱）</td></tr>
       <tr><td><code>LOG_DIR</code></td><td>log 放哪</td><td>外殼</td><td><span class="tag t-ok">已定</span></td></tr>
     </table>
@@ -1130,7 +1132,7 @@ audio = &lt;the recording&gt;</code></pre>
   <div class="rows">
     <div class="row"><b>只聽本機</b><span>127.0.0.1，不對外。<span class="tag t-ok">已定</span></span></div>
     <div class="row"><b>沒有 token 不啟動</b><span>少了 <code>ACCESS_TOKEN</code> 伺服器拒絕啟動。<span class="tag t-ok">已定</span>（骨架已經這樣做）</span></div>
-    <div class="row" id="row-restart"><b>使用者改了設定</b><span><span class="tag t-ok">已定</span> 外殼重新啟動伺服器。伺服器不存狀態，重啟不會丟東西；有請求在跑就等它做完。</span></div>
+    <div class="row" id="row-restart"><b>使用者改了設定</b><span><span class="tag t-ok">已定</span> 外殼重新啟動伺服器。伺服器不存狀態，重啟不會丟東西；有請求在跑就等它做完。模型除外：它不是環境變數，跟著每次 <code>/generate</code> 請求送，改了不用重啟（2026-11-28）。</span></div>
     <div class="row" id="row-ownfolder"><b>自己的資料夾和 socket</b><span><span class="tag t-ok">已定</span> excalidraw-mac 原本把 socket 放在 <code class="long">~/Library/Application Support/Excalidraw/</code>。如果使用者同時裝了原本的 Excalidraw App，AI 可能改到另一個 App 的畫布。所以這個 App 要用自己的資料夾。</span></div>
     <div class="row" id="row-setupcheck"><b>Setup check 由誰做</b><span><span class="tag t-ok">已定</span> Swift 外殼。它本來就要先找到 Claude Code 才能把位置交給伺服器，順便檢查版本。伺服器維持兩個端點。怎麼檢查「有沒有登入」：<span class="tag t-unv">未驗證</span></span></div>
     <div class="row"><b>App 重開</b><span>伺服器連到畫布的 socket 會自己接回（macOS 上實驗過）。</span></div>
@@ -1154,6 +1156,7 @@ audio = &lt;the recording&gt;</code></pre>
       <tr><td>AI 用了哪些工具（依序）</td></tr>
       <tr><td>幾步</td></tr>
       <tr><td>花多久</td></tr>
+      <tr><td>用了哪個模型（看快取數字要用，2026-11-28 加）</td></tr>
       <tr><td>快取讀了多少 token（<code>cache_read_input_tokens</code>）</td></tr>
       <tr><td>結果（<code>done</code> 或錯誤種類）</td></tr>
       <tr><td>AI 最後說的話</td></tr>

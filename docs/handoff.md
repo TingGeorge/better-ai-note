@@ -29,6 +29,7 @@
 - **畫布外面的畫面全部用 React 做在 `web/` 裡**（首頁、側邊欄、標題列、狀態列、設定、Setup check），和畫布在同一個 WKWebView。不要再用 AppKit 做新畫面。原因：一套 CSS 風格統一；雲端的 agent 能用 headless Chromium 自己截圖比對。
 - **畫面要的資料全部經過外殼**（最近的筆記、設定、Claude Code 狀態），用已經有的管道（`web/src/native.ts`：網頁 → 外殼用 `postMessage`，外殼 → 網頁用 `excalidrawBridge.handle`，啟動資料用 `__native__/session`）。網頁不直接連伺服器，token 只有外殼知道。要加哪些訊息，做第 6 部分時再定。
 - **畫布 MCP 用 TypeScript 寫在 `server/` 裡**，和伺服器同一個程序，用 Agent SDK 的內建 MCP 交給 Claude。使用者要看得懂這一段，雲端也才能測。
+- **AI 用哪個模型由使用者在設定裡選**（2026-11-28）：Settings 的「Claude Code」那一組有一列「Model」，Haiku／Sonnet／Opus 三段切換，預設 Sonnet。設定值由外殼保管，每次 `/generate` 的請求帶著它（用短名 `haiku`、`sonnet`、`opus`）；伺服器只接受這三個值，並明確傳給 SDK，不用 SDK 的預設；換模型不用重啟伺服器。伺服器要自己檢查，因為模型名字錯時 SDK 不會早早失敗（見下面的實測）。換模型後那份筆記的快取要重新建一次（快取是分模型的）。
 - Claude Code 用使用者已裝好、已用訂閱登入的那一份，不載入使用者的設定，不需 API 金鑰。
 - 兩個端點：`/generate`、`/transcribe`。不逐字串流，等待時顯示載入動畫。
 - 語音一開始就做：OpenAI 相容的 STT API，使用者自己的金鑰；錄音由外殼做。
@@ -85,15 +86,16 @@
 - 畫面上不放「清掉這份筆記的記憶」的動作。想重來的人自己刪掉記憶檔。
 - 授權簡單處理：把 Agent SDK 列進第三方授權清單，不另外查證。
 
+### 從上游繼承來的東西
+
+- **介面只用英文。** App 自己的中文字串和照系統語言切換的邏輯 2026-11-28 已拿掉（`L10n.swift` 刪了，Excalidraw 的介面語言固定 `en`）。筆記的內容、中文字型的處理不受影響。Excalidraw 自己的各國語言檔還會被打包（約 1.1 MB，不會被載入），沒有處理。沒驗證的：沒有開 App 看過選單和開始畫面；系統第一語言是中文或日文時，畫布上非手寫字型的中文字會不會被挑到不同的備用字型（`<html lang>` 現在固定 `en`）；開始畫面的日期用「英文加使用者的地區」組出來，使用者在系統設定裡另外改過的 12／24 小時制可能不會被採用。
+- **一個視窗、一次一份筆記，照我們的設計。** 現在的程式是「每份畫布一個視窗」加一個預先載入的備用視窗（`AppDelegate.swift` 的 `canvases`、`spare`；`web/test/windows-mac.test.mjs`）。第 6 部分做視窗外框時改掉，連同那個測試。
+- **程式裡的舊名字**（使用者說照我的建議）：環境變數 `EXCALIDRAW_MAC_HOME` 2026-11-28 已改成 `INVIC_HOME`（沒有留舊名字的相容），因為它要變成伺服器啟動設定的一部分。其他的不改：Swift 的 package 和 target 名字（`ExcalidrawMac`、`ExcalidrawApp`、`ExcalidrawMCP`）、`excalidraw://`、`.excalidraw` 檔案類型。它們在裡面看不到，改了沒有好處；`ExcalidrawMCP` 之後整個會拿掉。
+- Figma 的 Settings 裡給外部 agent 用的「AI agent／Connect…」那一區：2026-11-28 已從三個 Settings 畫面拿掉。同一天在「Claude Code」那一組加了「Model」那一列（Settings 1、2；「找不到 Claude Code」的 Settings 3 沒有這一列，因為那個狀態下 AI 功能是關的，Location 那一列也本來就不顯示）。面板大小沒變（800×584），內容不用捲，捲軸拿掉了，最後一組下面留白約 38px。
+
 ## 還沒決定的（要問使用者）
 
-- **用哪個模型**（Opus／Sonnet／Haiku）。程式裡一定要明確寫出來，不要用預設。速度的實測在下面。
 - 主色要不要改回和 icon 完全一樣的 `#3D6BFF`。沒說就維持 `#3C69FD`。
-- 從上游繼承來、和定案的產品不一致的三樣東西，要不要拿掉（2026-11-28 已列給使用者，還沒回答）：
-  - 多視窗：設計是一個視窗一份筆記，但程式是「每份畫布一個視窗」加一個預先載入的備用視窗（`AppDelegate.swift` 的 `canvases`、`spare`；`web/test/windows-mac.test.mjs`）。多半在第 6 部分處理。
-  - 中文介面：設計是介面文字用英文，但程式會照系統語言換成中文（`web/src/i18n.ts` 的 `zh`、`mac/Sources/ExcalidrawApp/L10n.swift`、`build-app.sh` 的 `CFBundleLocalizations`）。
-  - 上游的名字：環境變數 `EXCALIDRAW_MAC_HOME`、`Package.swift` 的 `ExcalidrawMac`、target `ExcalidrawApp`／`ExcalidrawMCP`、URL scheme `excalidraw://`。要改名的話最好在第 3 部分把環境變數的名字定下來之前。
-- Figma 的 Settings 畫面裡還有給外部 agent 用的「AI agent／Connect…」那一區（三個 Settings 畫面都有，來自同一個元件，內層節點 `51:3692`）。設計上已決定不支援外部 agent，但使用者還沒說要從 Figma 拿掉；做設定畫面時不要做這一區。
 
 ## 實作的順序
 
@@ -202,7 +204,7 @@ mcpServersDelivery: "initialize",  // 不加會印 deprecation 警告
 - **每個工具都要把 `extra.signal` 傳給連線那一層。** 工具跑在伺服器自己的程序裡，查詢取消後不會自動停；不檢查的話，取消 3 秒後還是畫上去了。
 - **每次查詢建一個新的 `createSdkMcpServer()`，共用一條 socket 連線。** 同一個物件給兩個查詢用，第二個會悄悄沒有畫布工具（不報錯），所以「自己檢查工具清單」一定要做。畫布工具少了要回哪一種錯誤還沒定（錯誤表只有「多出別的工具」的 `unexpected_tools`）。
 - **Bun 的 `socket.write()` 不會排隊**：回傳的是寫進去的位元組數，剩下的要等 `drain`。
-- 伺服器用 `EXCALIDRAW_MAC_HOME`（App 的資料夾）找到 socket。socket 的路徑不能超過 macOS 的 104 位元組上限。
+- 伺服器用 `INVIC_HOME`（App 的資料夾）找到 socket。socket 的路徑不能超過 macOS 的 104 位元組上限。
 - 沒有自動啟動 App（外殼啟動伺服器，所以不需要）；App 重開後連線會自己重連。
 - `bun build --compile` 後 `import.meta.dir` 是 `/$bunfs/root`，拿來當 `cwd` 會讓 `claude` 啟動失敗，要用 `process.cwd()`。編出來的程式要重新簽章，不然一啟動就被系統殺掉。
 - 規模：六個工具，約 250–350 行加一個對假 App 的測試。
@@ -234,7 +236,7 @@ Swift 外殼在啟動時把包在 App 裡的伺服器跑起來，關 App 時一�
 - **`scripts/build-app.sh`**：用 `bun build --compile`（`bun-darwin-arm64`）把伺服器編成 `Invic.app/Contents/MacOS/invic-server`，放在簽章之前；編出來的 Bun 程式要重新簽章，`codesign --verify --deep --strict` 要過。Swift 改成只編 arm64。
 - **`mac/`**：一個檔案的小型別（例如 `ServerProcess.swift`），由 AppDelegate 持有：
   - 每次啟動產生隨機 token（只在記憶體，不寫檔、不進 log）、挑一個空的本機埠。
-  - 啟動伺服器時給環境變數：`ACCESS_TOKEN`、`PORT`、`CLAUDE_CODE_PATH`、`EXCALIDRAW_MAC_HOME`（`AppPaths` 的資料夾，伺服器用它找到這個 App 的 socket）、`LOG_DIR`（資料夾裡的 `Logs`）。`STT_*` 留到第 8 部分。
+  - 啟動伺服器時給環境變數：`ACCESS_TOKEN`、`PORT`、`CLAUDE_CODE_PATH`、`INVIC_HOME`（`AppPaths` 的資料夾，伺服器用它找到這個 App 的 socket）、`LOG_DIR`（資料夾裡的 `Logs`）。`STT_*` 留到第 8 部分。
   - 找 `claude`：圖形 App 拿不到 shell 的 PATH，要查常見位置（`~/.local/bin`、`~/.claude/local`、`/opt/homebrew/bin`、`/usr/local/bin`），再退到問登入 shell `command -v claude`。找不到也照樣啟動伺服器（第 7 部分會顯示 Setup check）。
   - 伺服器意外結束時重啟一次（不要無限重試）；提供 `restart()` 給設定改變時用；提供 base URL 和 token 給之後送請求的程式。
   - 找不到包好的伺服器（例如直接 `swift build` 跑）時記一行 log 就繼續；開發時可用 `INVIC_SERVER_PATH` 指定。
@@ -264,7 +266,7 @@ Swift 外殼在啟動時把包在 App 裡的伺服器跑起來，關 App 時一�
 
 ### CI 還沒有
 
-- 上游有一份 workflow 沒搬進來：<https://github.com/TingGeorge/excalidraw-mac/blob/d332730/.github/workflows/excalidraw-mac.yml>。它在 macOS runner 上 build App，用 `EXCALIDRAW_MAC_HOME=/tmp/exm-ci` 隔離，再跑真 App 的測試。拿它當起點，名字改成 Invic。
+- 上游有一份 workflow 沒搬進來：<https://github.com/TingGeorge/excalidraw-mac/blob/d332730/.github/workflows/excalidraw-mac.yml>。它在 macOS runner 上 build App，用 `EXCALIDRAW_MAC_HOME=/tmp/exm-ci` 隔離（我們這邊叫 `INVIC_HOME`），再跑真 App 的測試。拿它當起點，名字改成 Invic。
 - 建議三個 job：`server`（ubuntu：`bun test`、typecheck）、`web`（ubuntu：build、typecheck、`bun run test`；同時裝 Bun 和 Node，固定 Bun 的版本）、`mac`（macos：`scripts/build-app.sh`、`mcp.test.mjs`、真 App 的 `*-mac` 測試）。
 - `web/scripts/third-party.mjs` 的註解說 CI 會檢查 `THIRD_PARTY_NOTICES.md` 是不是最新：CI 建好後補上（build 後 `git diff --exit-code THIRD_PARTY_NOTICES.md`）。
 
@@ -290,11 +292,7 @@ Swift 外殼在啟動時把包在 App 裡的伺服器跑起來，關 App 時一�
 - `~/Desktop/ai-note-test/`（實驗的記憶檔）
 - `~/.claude/projects/-Users-apple-Desktop-ai-note-test/`（SDK 留的副本）
 
-2026-11-28 留下的，還沒問過要不要清：
-
-- `/tmp/invic-exp-fake`、`/tmp/invic-exp-real`（畫布工具實驗用的 App 資料夾）
-- `mac/.build/out/Products/Release/Excalidraw.dSYM`（改名前留下的）
-- `build/Invic.app`、`build/Invic-macOS.zip`（換 icon 和換 Bun 之前 build 的，是舊的）
+`build/Invic.app`、`build/Invic-macOS.zip` 是換 icon 和換 Bun 之前 build 的舊版，不在 git 裡；下次跑 `scripts/build-app.sh` 會自動換掉，不用特別清。
 
 ## 和這位使用者工作的方式
 

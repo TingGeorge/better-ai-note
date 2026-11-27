@@ -1,9 +1,9 @@
-// Usage: EXCALIDRAW_MAC_HOME=<tmp> bun exp.ts <mode> [arg]
+// Usage: INVIC_HOME=<tmp> bun exp.ts <mode> [arg]
 import { AbortError, query, type Options, type SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 
 const CLAUDE = "/path/to/claude";
 const MCP = "/path/to/repo/build/Invic.app/Contents/MacOS/excalidraw-mcp";
-const HOME = process.env.EXCALIDRAW_MAC_HOME!;
+const HOME = process.env.INVIC_HOME!;
 const SIX = ["get_scene", "render_image", "add_elements", "update_elements", "delete_elements", "add_mermaid"].map(
   (name) => `mcp__canvas__${name}`,
 );
@@ -12,7 +12,7 @@ const BLOCKED = ["mcp__canvas__clear_canvas", "mcp__canvas__zoom_to_fit"];
 const base: Options = {
   pathToClaudeCodeExecutable: CLAUDE,
   settingSources: [],
-  mcpServers: { canvas: { command: MCP, env: { EXCALIDRAW_MAC_HOME: HOME } } },
+  mcpServers: { canvas: { command: MCP, env: { INVIC_HOME: HOME } } },
   ...(process.env.MODEL ? { model: process.env.MODEL } : {}),
 };
 
