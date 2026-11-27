@@ -342,7 +342,7 @@
     <div class="s-todo"><b>還沒做</b><span>程式（後端只有骨架）</span></div>
   </div>
 
-  <p class="muted">資料更新日 2026-11-26。舊方向（iPad、獨立伺服器）的頁面在 archive/ 裡：<a href="archive/ipad-app-architecture.html">iPad App 架構</a>、<a href="archive/backend-architecture.html">後端架構</a>。點圖上的方塊可以跳到它的說明。</p>
+  <p class="muted">後端的細節（模組、請求格式、記憶、設定）在<a href="backend-architecture.html">後端架構</a>。資料更新日 2026-11-26。舊方向（iPad、獨立伺服器）的頁面在 archive/ 裡：<a href="archive/ipad-app-architecture.html">iPad App 架構</a>、<a href="archive/backend-architecture.html">後端架構</a>。點圖上的方塊可以跳到它的說明。</p>
 
   <!-- 1. Overview -->
   <h2>整體</h2>
@@ -634,7 +634,7 @@
     </div>
     <div class="note" id="note-step4" style="--c:#d9822b">
       <h3>4 Agent looks</h3>
-      <p>AI 用 <code>get_scene</code> 看畫布上有什麼、在哪裡、你選了什麼；需要時用 <code>render_image</code> 看畫面。</p>
+      <p>AI 用 <code>get_scene</code> 看畫布上有什麼、在哪裡、你選了什麼。請求裡已經附了按下去那一刻的截圖；改完想檢查時再用 <code>render_image</code> 看畫面。</p>
     </div>
     <div class="note" id="note-step5" style="--c:#d9822b">
       <h3>5 Agent edits</h3>
@@ -661,7 +661,7 @@
     <h3>端點</h3>
     <table>
       <tr><th>端點</th><th>送出</th><th>回來</th></tr>
-      <tr><td><code>POST /generate</code></td><td>使用者的話</td><td>完成或失敗</td></tr>
+      <tr><td><code>POST /generate</code></td><td>使用者的話、選了什麼、一張截圖</td><td>完成或失敗</td></tr>
       <tr><td><code>POST /transcribe</code></td><td>音檔</td><td>文字（聽寫：文字先放回輸入框，確認後才送出；音檔轉完就丟）</td></tr>
     </table>
   </div>

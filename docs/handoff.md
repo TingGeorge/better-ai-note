@@ -10,7 +10,9 @@
 
 - Figma 定案：<https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1>（file key `5DfsHafSo4iqhnIUUlmVWN`），`App` 頁，22 個畫面：Home 2、Canvas 側邊欄關 10、Canvas 側邊欄開 2、Settings 3、Setup check 5，加元件和設計變數。舊版在兩個 Archive 頁。
 - 畫面的決定都寫進了 `architecture.html` 的「畫面」、技術架構文件、概念文件、README；截圖在 `docs/images/`。
-- 這些修改和這份交接筆記都**還沒 commit**。
+- 後端的設計另外寫成一頁 [backend-architecture.html](backend-architecture.html)（2026-11-27）：模組、`/generate` 和 `/transcribe` 的格式、錯誤種類、記憶、啟動時的設定、log。頁面最上面的 11 件事使用者在 2026-11-27 都確認了（只剩「用哪個模型」還沒決定）；標 `未驗證` 的要在實作那一塊時先試。使用者已經決定的一項：`/generate` 的請求要附截圖（他的理由：多花的 token 不多，準確率比較好）。截圖用 PNG、放在 JSON 裡的 base64、長寬設上限；記憶轉接器寫檔時把圖片換成一行字，不存進記憶檔（要先驗證 SDK 接續對話不會出問題）。
+- 這一頁是用暫存資料夾裡的 `backend_diagrams.py` 和 `backend-architecture.template.html` 產生的（改模板再重跑）。暫存資料夾被清掉的話，直接改 HTML 就好。
+- 原因：最早（11/24）和使用者討論過的後端模組切分，在改成 Mac App 時跟著舊頁面一起進了 archive，現行文件裡沒有。使用者發現找不到。以後封存時，還有效的內容要留在現行文件裡。
 
 ## 畫面設計的重點（細節在 architecture.html）
 
@@ -50,9 +52,8 @@
 
 ## Git 狀態
 
-- 分支 `main`。最近的 commit：`e4f1da8`（AI 用工具動畫布、記憶、實驗結果）、`00cd25c`（方向改成 Mac App）。
-- **這兩個 commit 都還沒 push。** 使用者沒說要 push。
-- 畫面定案後的文件修改、`docs/images/`、這份 `docs/handoff.md` 都還沒 commit。
+- 分支 `main`，到 `33aa09b`（畫面定案）為止都已 commit 並 push。
+- 後端架構頁（`docs/backend-architecture.html`、五個 `docs/excalidraw/backend-*.excalidraw`）和連到它的幾處修改**還沒 commit**。
 
 ## 等「全部結束後」再討論的
 
@@ -62,14 +63,22 @@
 - `~/Desktop/ai-note-test/`（實驗的記憶檔）
 - `~/.claude/projects/-Users-apple-Desktop-ai-note-test/`（SDK 留的副本）
 
-## 進入實作時的建議順序（使用者還沒同意開始）
+## 進入實作時的順序（使用者還沒同意開始）
 
-1. 把 excalidraw-mac 的程式搬進這個 repo。
-2. 後端 `/generate`：Agent SDK 接畫布 MCP，加記憶轉接器。
-3. Swift 外殼啟動伺服器、送請求。
-4. 一個視窗的介面：標題列、狀態列、首頁、側邊欄、AI 按鈕和輸入框（照 Figma）。
-5. Setup check 和設定的面板。
-6. 語音。
+一次做一部分；做完我自己審查，停下來等使用者審查，他同意才 commit 和做下一部分。
+
+1. 把 excalidraw-mac 的程式搬進這個 repo（`mac/`、`web/`），不改功能。
+2. 後端 `/generate`，切成小塊：`agent.ts`、`prompt.ts`、`memory.ts`、`index.ts`。
+3. Swift 外殼啟動伺服器（隨機 token），關 App 時一起關。
+4. AI 主流程：AI 按鈕、輸入框、處理中／完成／失敗；拿掉「AI agent connected」。
+5. 鎖住並淡化交給 AI 的東西、Cancel、Undo。
+6. 視窗外框：標題列、狀態列、首頁、側邊欄、筆記資料夾。
+7. Setup check 和設定的面板。
+8. 語音：`/transcribe`、錄音、麥克風按鈕。
+
+收尾：把伺服器編成單一程式包進 App、重新簽章、量大小。
+
+審查的分工：使用者細看後端和「各部分怎麼接起來」（後端每一塊動手前先給圖和格式讓他確認）；前端和 Mac App 他只用用看，所以我要自己對照 Figma 檢查仔細、給截圖。
 
 ## 和這位使用者工作的方式
 

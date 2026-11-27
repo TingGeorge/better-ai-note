@@ -9,6 +9,7 @@
 - [概念文件](docs/AI筆記App_概念文件.md)：這個 App 要做什麼
 - [技術架構](docs/AI筆記App_技術架構.md)：技術選擇
 - [架構圖](docs/architecture.html)：App 的元件、流程和畫面（用瀏覽器開）
+- [後端架構](docs/backend-architecture.html)：伺服器的模組、請求格式、記憶和設定（用瀏覽器開）
 - [畫面設計](https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1)：Figma 上的完整畫面
 - [archive](docs/archive/)：放棄的 iPad 與獨立伺服器方向，留作紀錄
 
@@ -24,6 +25,7 @@ ai-note-app/
 │   ├── AI筆記App_概念文件.md
 │   ├── AI筆記App_技術架構.md
 │   ├── architecture.html
+│   ├── backend-architecture.html
 │   ├── archive/                   過時的文件，留作紀錄
 │   ├── excalidraw/                架構圖的原始檔
 │   └── images/                    畫面設計的截圖
