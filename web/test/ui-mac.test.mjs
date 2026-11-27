@@ -1,7 +1,7 @@
 // Clicks the real Mac app with real mouse events (macOS CI, after mcp.test.mjs left a
 // drawing open): the tools in the title bar row work, the Library button opens the
 // library, and the empty parts of that row drag the window.
-//   EXCALIDRAW_MAC_HOME=… EXCALIDRAW_APP_PATH=…/Invic.app node --test test/ui-mac.test.mjs
+//   INVIC_HOME=… EXCALIDRAW_APP_PATH=…/Invic.app node --test test/ui-mac.test.mjs
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { connect } from "node:net";
@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const HOME = process.env.EXCALIDRAW_MAC_HOME;
+const HOME = process.env.INVIC_HOME;
 const APP = process.env.EXCALIDRAW_APP_PATH;
 const MOUSE = fileURLToPath(new URL("./mouse.swift", import.meta.url));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

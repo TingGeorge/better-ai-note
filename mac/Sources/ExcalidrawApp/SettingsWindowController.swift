@@ -18,7 +18,7 @@ final class SettingsWindowController: NSObject {
             contentRect: NSRect(x: 0, y: 0, width: 460, height: 200), styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         super.init()
-        window.title = L10n.t("Settings", "設定")
+        window.title = "Settings"
         window.isReleasedWhenClosed = false
         window.isRestorable = false
         window.contentView = makeContent()
@@ -40,21 +40,19 @@ final class SettingsWindowController: NSObject {
         appearance.segmentStyle = .rounded
         appearance.trackingMode = .selectOne
         appearance.segmentCount = 3
-        for (index, label) in [L10n.t("System", "跟隨系統"), L10n.t("Light", "淺色"), L10n.t("Dark", "深色")].enumerated() {
+        for (index, label) in ["System", "Light", "Dark"].enumerated() {
             appearance.setLabel(label, forSegment: index)
             appearance.setWidth(96, forSegment: index)
         }
         appearance.target = self
         appearance.action = #selector(appearanceChanged(_:))
-        appearance.setAccessibilityLabel(L10n.t("Appearance", "外觀"))
+        appearance.setAccessibilityLabel("Appearance")
 
         let agentButton = NSButton(
-            title: L10n.t("Connect an AI Agent…", "連接 AI Agent…"), target: self, action: #selector(agentSetup(_:)))
+            title: "Connect an AI Agent…", target: self, action: #selector(agentSetup(_:)))
         agentButton.bezelStyle = .rounded
         let agentNote = NSTextField(
-            wrappingLabelWithString: L10n.t(
-                "Lets Claude Code and other MCP clients draw in the file you have open.",
-                "讓 Claude Code 等 MCP 用戶端在你開著的檔案裡畫圖。"))
+            wrappingLabelWithString: "Lets Claude Code and other MCP clients draw in the file you have open.")
         agentNote.font = .systemFont(ofSize: 11)
         agentNote.textColor = .secondaryLabelColor
         agentNote.preferredMaxLayoutWidth = 300
@@ -69,8 +67,8 @@ final class SettingsWindowController: NSObject {
             return field
         }
         let grid = NSGridView(views: [
-            [label(L10n.t("Appearance:", "外觀：")), appearance],
-            [label(L10n.t("AI agent:", "AI Agent：")), agent],
+            [label("Appearance:"), appearance],
+            [label("AI agent:"), agent],
         ])
         grid.rowSpacing = 20
         grid.columnSpacing = 12

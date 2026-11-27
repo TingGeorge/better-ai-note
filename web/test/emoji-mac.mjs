@@ -2,12 +2,12 @@
 // WebKit draws a colour emoji from the bitmap that fits the font size before the canvas is
 // scaled, so a zoomed-in emoji came out blurry while the letters next to it were sharp.
 // Zooms onto a text with an emoji and takes a screenshot (emoji-zoom.png) for the log.
-//   EXCALIDRAW_MAC_HOME=… node test/emoji-mac.mjs
+//   INVIC_HOME=… node test/emoji-mac.mjs
 import { execFileSync } from "node:child_process";
 import { connect } from "node:net";
 import { join } from "node:path";
 
-const HOME = process.env.EXCALIDRAW_MAC_HOME;
+const HOME = process.env.INVIC_HOME;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function bridge(method, params = {}) {

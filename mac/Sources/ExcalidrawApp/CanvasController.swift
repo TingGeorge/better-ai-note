@@ -35,11 +35,6 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
         let config = WKWebViewConfiguration()
         config.setURLSchemeHandler(
             SchemeHandler(root: webRoot, session: { store.sessionJSON() }), forURLScheme: SchemeHandler.scheme)
-        let language = JSON.string(Locale.preferredLanguages.first ?? "en").text
-        config.userContentController.addUserScript(
-            WKUserScript(
-                source: "window.__NATIVE_LANG__ = \(language);", injectionTime: .atDocumentStart,
-                forMainFrameOnly: true))
         webView = CanvasWebView(frame: NSRect(x: 0, y: 0, width: 1280, height: 820), configuration: config)
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1280, height: 820),
@@ -365,12 +360,11 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
     func confirmClosing(completion: @escaping (Bool) -> Void) {
         guard hasDocument, dirty else { return completion(true) }
         let alert = NSAlert()
-        alert.messageText = L10n.t(
-            "Do you want to save the changes made to “\(displayName)”?", "要儲存對「\(displayName)」所做的變更嗎？")
-        alert.informativeText = L10n.t("Your changes will be lost if you don't save them.", "如果不儲存，變更將會遺失。")
-        alert.addButton(withTitle: L10n.t("Save", "儲存"))
-        alert.addButton(withTitle: L10n.t("Cancel", "取消"))
-        alert.addButton(withTitle: L10n.t("Don't Save", "不儲存"))
+        alert.messageText = "Do you want to save the changes made to “\(displayName)”?"
+        alert.informativeText = "Your changes will be lost if you don't save them."
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: "Don't Save")
         show()
         alert.beginSheetModal(for: window) { response in
             switch response {
@@ -399,9 +393,7 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
             } catch {
                 return completion(
                     BridgeError(
-                        L10n.t(
-                            "Could not read \(url.path): \(error.localizedDescription)",
-                            "無法讀取 \(url.path)：\(error.localizedDescription)")))
+                        "Could not read \(url.path): \(error.localizedDescription)"))
             }
         }
         call("load_scene_json", ["json": .string(text), "dirty": .bool(recovered != nil)]) { result in
@@ -416,19 +408,15 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
                 self.show()
                 if recovered != nil {
                     let alert = NSAlert()
-                    alert.messageText = L10n.t("Unsaved changes restored", "已恢復未儲存的變更")
-                    alert.informativeText = L10n.t(
-                        "Invic quit before you saved “\(url.lastPathComponent)”. Your changes are back; press ⌘S to save them.",
-                        "Invic 在你儲存「\(url.lastPathComponent)」之前就結束了。變更已經恢復，按 ⌘S 儲存。")
+                    alert.messageText = "Unsaved changes restored"
+                    alert.informativeText = "Invic quit before you saved “\(url.lastPathComponent)”. Your changes are back; press ⌘S to save them."
                     alert.beginSheetModal(for: self.window)
                 }
                 completion(nil)
             case .failure(let error):
                 completion(
                     BridgeError(
-                        L10n.t(
-                            "\(url.lastPathComponent) is not an Excalidraw drawing (\(error))",
-                            "\(url.lastPathComponent) 不是 Excalidraw 繪圖檔（\(error)）")))
+                        "\(url.lastPathComponent) is not an Excalidraw drawing (\(error))"))
             }
         }
     }
@@ -506,9 +494,7 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
                 } catch {
                     return completion(
                         BridgeError(
-                            L10n.t(
-                                "Could not save \(url.path): \(error.localizedDescription)",
-                                "無法儲存 \(url.path)：\(error.localizedDescription)")))
+                            "Could not save \(url.path): \(error.localizedDescription)"))
                 }
                 self.call("mark_saved") { _ in
                     self.store.documentMoved(from: self.file ?? url, to: url, dirty: false)
@@ -585,10 +571,10 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
         }
         switch item.action {
         case #selector(CanvasContainerView.undo(_:)):
-            item.title = L10n.t("Undo", "還原")
+            item.title = "Undo"
             return editState.canUndo
         case #selector(CanvasContainerView.redo(_:)):
-            item.title = L10n.t("Redo", "重做")
+            item.title = "Redo"
             return editState.canRedo
         case #selector(NSText.cut(_:)), #selector(NSText.copy(_:)):
             return editState.hasSelection
@@ -660,7 +646,7 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
     func showError(_ error: BridgeError) {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = L10n.t("Something went wrong", "發生錯誤")
+        alert.messageText = "Something went wrong"
         alert.informativeText = error.description
         if window.isVisible {
             alert.beginSheetModal(for: window)
@@ -766,8 +752,8 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
     {
         let alert = NSAlert()
         alert.messageText = message
-        alert.addButton(withTitle: L10n.t("OK", "好"))
-        alert.addButton(withTitle: L10n.t("Cancel", "取消"))
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
         return await alert.beginSheetModal(for: window) == .alertFirstButtonReturn
     }
 }

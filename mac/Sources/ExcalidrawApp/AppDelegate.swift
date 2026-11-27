@@ -168,7 +168,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         if let canvas { return canvas.showError(error) }
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = L10n.t("Something went wrong", "發生錯誤")
+        alert.messageText = "Something went wrong"
         alert.informativeText = error.description
         alert.runModal()
     }
@@ -176,12 +176,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     /// File > New: pick a folder and a name, create the file there, open it in a new window.
     func createDocument() {
         let panel = NSSavePanel()
-        panel.title = L10n.t("New Excalidraw File", "新增 Excalidraw 檔案")
-        panel.message = L10n.t("Choose a folder and a name for your drawing.", "選擇要存放繪圖的資料夾，並輸入檔名。")
-        panel.prompt = L10n.t("Create", "建立")
+        panel.title = "New Excalidraw File"
+        panel.message = "Choose a folder and a name for your drawing."
+        panel.prompt = "Create"
         panel.allowedContentTypes = [.excalidrawScene]
         panel.canCreateDirectories = true
-        panel.nameFieldStringValue = "\(L10n.t("Untitled", "未命名")).excalidraw"
+        panel.nameFieldStringValue = "Untitled.excalidraw"
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
             // Replacing a file that is open: that window shows the new, empty drawing.
@@ -194,9 +194,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             } catch {
                 return self.showError(
                     BridgeError(
-                        L10n.t(
-                            "Could not create \(url.path): \(error.localizedDescription)",
-                            "無法建立 \(url.path)：\(error.localizedDescription)")))
+                        "Could not create \(url.path): \(error.localizedDescription)"))
             }
             self.openFile(url)
         }
@@ -292,8 +290,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     @objc func openHelp(_ sender: Any?) {
-        let readme = L10n.isChinese ? "blob/main/README.zh-TW.md" : "#readme"
-        NSWorkspace.shared.open(URL(string: "https://github.com/TingGeorge/excalidraw-mac/\(readme)")!)
+        NSWorkspace.shared.open(URL(string: "https://github.com/TingGeorge/excalidraw-mac/#readme")!)
     }
 
     /// Help > Acknowledgements: the licenses of everything the app includes (bundled with it).
@@ -315,11 +312,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             """
 
         let alert = NSAlert()
-        alert.messageText = L10n.t("Connect an AI agent (MCP)", "連接 AI Agent（MCP）")
-        alert.informativeText = L10n.t(
-            "This app includes an MCP server, so agents such as Claude Code can draw in the file you have open: read the canvas, add shapes and Mermaid diagrams, edit, and look at the result. Agents can't save or open files; you save with ⌘S.\n\nClaude Code: run this command once in Terminal. Other MCP clients (Claude Desktop, Cursor…): add the JSON to their MCP settings.",
-            "這個 App 內建 MCP 伺服器，Claude Code 等 agent 可以在你開著的檔案裡畫圖：讀取畫布、新增圖形與 Mermaid 圖表、修改、看畫出來的結果。agent 不能存檔或開檔，存檔由你按 ⌘S。\n\nClaude Code：在「終端機」執行一次下面的指令。其他 MCP 用戶端（Claude Desktop、Cursor…）：把 JSON 加進它們的 MCP 設定。"
-        )
+        alert.messageText = "Connect an AI agent (MCP)"
+        alert.informativeText = "This app includes an MCP server, so agents such as Claude Code can draw in the file you have open: read the canvas, add shapes and Mermaid diagrams, edit, and look at the result. Agents can't save or open files; you save with ⌘S.\n\nClaude Code: run this command once in Terminal. Other MCP clients (Claude Desktop, Cursor…): add the JSON to their MCP settings."
         let text = NSTextView(frame: NSRect(x: 0, y: 0, width: 520, height: 150))
         text.string = "\(claudeCommand)\n\n\(jsonConfig)"
         text.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
@@ -331,9 +325,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         scroll.hasVerticalScroller = true
         scroll.borderType = .bezelBorder
         alert.accessoryView = scroll
-        alert.addButton(withTitle: L10n.t("Copy Claude Code Command", "複製 Claude Code 指令"))
-        alert.addButton(withTitle: L10n.t("Copy JSON", "複製 JSON"))
-        alert.addButton(withTitle: L10n.t("Done", "完成"))
+        alert.addButton(withTitle: "Copy Claude Code Command")
+        alert.addButton(withTitle: "Copy JSON")
+        alert.addButton(withTitle: "Done")
 
         let copy = { (s: String) in
             NSPasteboard.general.clearContents()
@@ -353,7 +347,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     // MARK: Menu bar
 
     private func buildMainMenu() -> NSMenu {
-        let t = L10n.t
         let main = NSMenu()
 
         @discardableResult
@@ -375,60 +368,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         }
 
         submenu("Invic", [
-            item(t("About Invic", "關於 Invic"), #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+            item("About Invic", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
             .separator(),
-            item(t("Settings…", "設定…"), #selector(showSettings(_:)), ",", target: self),
-            item(t("Connect an AI Agent (MCP)…", "連接 AI Agent（MCP）…"), #selector(showAgentSetup(_:)), target: self),
+            item("Settings…", #selector(showSettings(_:)), ",", target: self),
+            item("Connect an AI Agent (MCP)…", #selector(showAgentSetup(_:)), target: self),
             .separator(),
-            item(t("Hide Invic", "隱藏 Invic"), #selector(NSApplication.hide(_:)), "h"),
-            item(t("Hide Others", "隱藏其他"), #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]),
-            item(t("Show All", "顯示全部"), #selector(NSApplication.unhideAllApplications(_:))),
+            item("Hide Invic", #selector(NSApplication.hide(_:)), "h"),
+            item("Hide Others", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]),
+            item("Show All", #selector(NSApplication.unhideAllApplications(_:))),
             .separator(),
-            item(t("Quit Invic", "結束 Invic"), #selector(NSApplication.terminate(_:)), "q"),
+            item("Quit Invic", #selector(NSApplication.terminate(_:)), "q"),
         ])
-        submenu(t("File", "檔案"), [
-            item(t("New File…", "新增檔案…"), #selector(newDocument(_:)), "n", target: self),
-            item(t("Open…", "開啟…"), #selector(openDocument(_:)), "o", target: self),
+        submenu("File", [
+            item("New File…", #selector(newDocument(_:)), "n", target: self),
+            item("Open…", #selector(openDocument(_:)), "o", target: self),
             .separator(),
-            item(t("Close", "關閉"), #selector(NSWindow.performClose(_:)), "w"),
-            item(t("Save", "儲存"), #selector(saveDocument(_:)), "s", target: self),
-            item(t("Save As…", "另存新檔…"), #selector(saveDocumentAs(_:)), "s", [.command, .shift], target: self),
+            item("Close", #selector(NSWindow.performClose(_:)), "w"),
+            item("Save", #selector(saveDocument(_:)), "s", target: self),
+            item("Save As…", #selector(saveDocumentAs(_:)), "s", [.command, .shift], target: self),
             .separator(),
             // Excalidraw's export dialog: preview, PNG / SVG / clipboard, background, dark mode, scale.
-            item(t("Export Image…", "匯出圖片…"), #selector(exportImage(_:)), "e", [.command, .shift], target: self),
+            item("Export Image…", #selector(exportImage(_:)), "e", [.command, .shift], target: self),
         ])
         // Standard responder actions. In the drawing window they act on the canvas (its undo
         // history and clipboard, see CanvasContainerView), or on the text being typed.
-        submenu(t("Edit", "編輯"), [
-            item(t("Undo", "還原"), Selector(("undo:")), "z"),
-            item(t("Redo", "重做"), Selector(("redo:")), "z", [.command, .shift]),
+        submenu("Edit", [
+            item("Undo", Selector(("undo:")), "z"),
+            item("Redo", Selector(("redo:")), "z", [.command, .shift]),
             .separator(),
-            item(t("Cut", "剪下"), #selector(NSText.cut(_:)), "x"),
-            item(t("Copy", "拷貝"), #selector(NSText.copy(_:)), "c"),
-            item(t("Paste", "貼上"), #selector(NSText.paste(_:)), "v"),
-            item(t("Select All", "全選"), #selector(NSText.selectAll(_:)), "a"),
+            item("Cut", #selector(NSText.cut(_:)), "x"),
+            item("Copy", #selector(NSText.copy(_:)), "c"),
+            item("Paste", #selector(NSText.paste(_:)), "v"),
+            item("Select All", #selector(NSText.selectAll(_:)), "a"),
         ])
-        submenu(t("View", "顯示方式"), [
-            item(t("Zoom In", "放大"), #selector(zoomIn(_:)), "+", target: self),
-            item(t("Zoom Out", "縮小"), #selector(zoomOut(_:)), "-", target: self),
-            item(t("Actual Size", "實際大小"), #selector(actualSize(_:)), "0", target: self),
-            item(t("Zoom to Fit", "縮放至符合畫面"), #selector(zoomToFit(_:)), target: self),
+        submenu("View", [
+            item("Zoom In", #selector(zoomIn(_:)), "+", target: self),
+            item("Zoom Out", #selector(zoomOut(_:)), "-", target: self),
+            item("Actual Size", #selector(actualSize(_:)), "0", target: self),
+            item("Zoom to Fit", #selector(zoomToFit(_:)), target: self),
             .separator(),
-            item(t("Dark Mode", "深色模式"), #selector(toggleDarkMode(_:)), target: self),
-            item(t("Library", "素材庫"), #selector(toggleLibrary(_:)), target: self),
+            item("Dark Mode", #selector(toggleDarkMode(_:)), target: self),
+            item("Library", #selector(toggleLibrary(_:)), target: self),
             .separator(),
-            item(t("Enter Full Screen", "進入全螢幕"), #selector(NSWindow.toggleFullScreen(_:)), "f", [.command, .control]),
+            item("Enter Full Screen", #selector(NSWindow.toggleFullScreen(_:)), "f", [.command, .control]),
         ])
-        let window = submenu(t("Window", "視窗"), [
-            item(t("Minimize", "縮到最小"), #selector(NSWindow.performMiniaturize(_:)), "m"),
-            item(t("Zoom", "縮放"), #selector(NSWindow.performZoom(_:))),
+        let window = submenu("Window", [
+            item("Minimize", #selector(NSWindow.performMiniaturize(_:)), "m"),
+            item("Zoom", #selector(NSWindow.performZoom(_:))),
         ])
         NSApp.windowsMenu = window
-        let help = submenu(t("Help", "輔助說明"), [
-            item(t("Invic Help", "Invic 說明"), #selector(openHelp(_:)), target: self),
-            item(t("Connect an AI Agent (MCP)…", "連接 AI Agent（MCP）…"), #selector(showAgentSetup(_:)), target: self),
+        let help = submenu("Help", [
+            item("Invic Help", #selector(openHelp(_:)), target: self),
+            item("Connect an AI Agent (MCP)…", #selector(showAgentSetup(_:)), target: self),
             .separator(),
-            item(t("Acknowledgements", "致謝與授權"), #selector(showAcknowledgements(_:)), target: self),
+            item("Acknowledgements", #selector(showAcknowledgements(_:)), target: self),
         ])
         NSApp.helpMenu = help
         return main

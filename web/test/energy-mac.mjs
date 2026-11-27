@@ -2,7 +2,7 @@
 // the app and its WebKit processes while nobody touches it, while the mouse just moves over
 // the canvas, while panning, on a small and on a big drawing; and whether the app keeps
 // putting the traffic lights back. Prints a report; it doesn't fail the build.
-//   EXCALIDRAW_MAC_HOME=… node test/energy-mac.mjs
+//   INVIC_HOME=… node test/energy-mac.mjs
 import { execFile, execFileSync } from "node:child_process";
 import { connect } from "node:net";
 import { tmpdir } from "node:os";
@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-const HOME = process.env.EXCALIDRAW_MAC_HOME;
+const HOME = process.env.INVIC_HOME;
 const SECONDS = Number(process.env.SAMPLE_SECONDS ?? 10);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const run = promisify(execFile);

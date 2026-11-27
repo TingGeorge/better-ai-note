@@ -9,18 +9,30 @@ const ok = (res) => {
   return res.result;
 };
 
+test("interface language is always English", async (t) => {
+  const h = await startHarness({
+    init: () => {
+      window.__NATIVE_LANG__ = "zh-Hant-TW";
+      Object.defineProperty(navigator, "languages", { get: () => ["zh-Hant-TW"] });
+    },
+  });
+  t.after(() => h.close());
+
+  ok(await h.call("set_agent_status", { connected: true }));
+  await waitFor(() => h.page.evaluate(() => !!document.querySelector(".agent-status")), 3000, "agent pill");
+
+  assert.equal(await h.page.evaluate(() => document.documentElement.lang), "en");
+  assert.equal(await h.page.evaluate(() => document.querySelector(".agent-status").textContent), "AI agent connected");
+});
+
 test("bridge operations", async (t) => {
-  const h = await startHarness({ lang: "zh-Hant-TW" });
+  const h = await startHarness();
   t.after(() => h.close());
 
   await t.test("ready and empty", async () => {
     const scene = ok(await h.call("get_scene"));
     assert.equal(scene.elementCount, 0);
     assert.equal(scene.bounds, null);
-  });
-
-  await t.test("uses the system language", async () => {
-    assert.equal(await h.page.evaluate(() => document.documentElement.lang), "zh-TW");
   });
 
   await t.test("add shapes, labels and arrows by id", async () => {
@@ -167,7 +179,7 @@ test("bridge operations", async (t) => {
     await waitFor(() => h.page.evaluate(() => !!document.querySelector(".default-sidebar")), 3000, "library sidebar");
     ok(await h.call("toggle_library"));
     ok(await h.call("set_agent_status", { connected: true }));
-    await waitFor(() => h.page.evaluate(() => document.querySelector(".agent-status")?.textContent === "AI Agent 已連線"), 3000, "agent pill");
+    await waitFor(() => h.page.evaluate(() => document.querySelector(".agent-status")?.textContent === "AI agent connected"), 3000, "agent pill");
     ok(await h.call("set_agent_status", { connected: false }));
     await waitFor(() => h.page.evaluate(() => !document.querySelector(".agent-status")), 3000, "agent pill hidden");
     // no number badges or hint line in the macOS look
@@ -202,7 +214,7 @@ test("bridge operations", async (t) => {
     assert.ok(holes.some(([x, y, w, hgt]) => y === 8 && hgt === 36 && w > 300), "toolbar reported as clickable");
     assert.ok(holes.every(([, y]) => y < 52));
     await h.page.evaluate(() => document.querySelector(".mac-top-actions .mac-library").click());
-    await waitFor(() => h.page.evaluate(() => (document.querySelector(".default-sidebar")?.innerText ?? "").includes("尚未加入")), 3000, "library content");
+    await waitFor(() => h.page.evaluate(() => (document.querySelector(".default-sidebar")?.innerText ?? "").includes("No items added yet")), 3000, "library content");
     await h.page.evaluate(() => document.querySelector(".mac-top-actions .mac-library").click());
     await waitFor(() => h.page.evaluate(() => !document.querySelector(".default-sidebar")), 3000, "library closed");
     ok(await h.call("set_document_info", { fullscreen: true }));
@@ -253,7 +265,7 @@ test("restores the saved session", async (t) => {
 // The items of the UI/UX report (H1, M2, M3, M6–M8, M11, M12, L1, L3, L4, L7–L11) and the
 // page side of the Edit menu (H3).
 test("macOS polish", async (t) => {
-  const h = await startHarness({ lang: "en" });
+  const h = await startHarness();
   t.after(() => h.close());
   const p = h.page;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -471,7 +483,7 @@ test("macOS polish", async (t) => {
 // WebKit has no canvas filters: the page brings its own, so the export dialog still offers
 // "Dark mode" and dark PNGs come out dark (L4).
 test("dark export without canvas filters (WebKit)", async (t) => {
-  const h = await startHarness({ lang: "en", init: () => delete CanvasRenderingContext2D.prototype.filter });
+  const h = await startHarness({ init: () => delete CanvasRenderingContext2D.prototype.filter });
   t.after(() => h.close());
   const p = h.page;
   assert.equal(await p.evaluate(() => Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, "filter")?.get?.name ?? ""), "get");
@@ -509,7 +521,7 @@ test("dark export without canvas filters (WebKit)", async (t) => {
 // Smooth and light on the Mac: an idle page that sleeps, trackpad pinch (Safari's gesture
 // events) that draws from cached bitmaps, a recovery copy that isn't rewritten on every pause.
 test("smooth and light", async (t) => {
-  const h = await startHarness({ lang: "en" });
+  const h = await startHarness();
   t.after(() => h.close());
   const p = h.page;
   ok(await h.call("add_elements", { elements: [{ type: "rectangle", x: 0, y: 0, width: 200, height: 80, label: { text: "流程" } }] }));
@@ -602,7 +614,7 @@ test("smooth and light", async (t) => {
 // WebKit stretches a colour emoji's bitmap when the canvas is scaled (blurry when zoomed in), so
 // text with an emoji is drawn at its on-screen size with the scale taken out (canvasEmoji.ts).
 test("emoji drawn at their on-screen size", async (t) => {
-  const h = await startHarness({ lang: "en" });
+  const h = await startHarness();
   t.after(() => h.close());
   const r = await h.page.evaluate(() => {
     const canvas = (w, h) => Object.assign(document.createElement("canvas"), { width: w, height: h }).getContext("2d");
@@ -643,7 +655,7 @@ test("emoji drawn at their on-screen size", async (t) => {
 // The library is shared by all windows: the app passes one window's change on to the others
 // (set_library), and a window doesn't send what it got back to the app.
 test("library shared between windows", async (t) => {
-  const h = await startHarness({ lang: "en" });
+  const h = await startHarness();
   t.after(() => h.close());
   const item = {
     id: "lib-1", status: "unpublished", created: 1,

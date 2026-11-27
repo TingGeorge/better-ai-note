@@ -96,14 +96,14 @@ const ExportIcon = icon(
 const LibraryIcon = icon("M3.5 3.5h3v13h-3zM8.5 3.5h3v13h-3zM13.5 4.5l2.8.8-3 11.4-2.8-.8z");
 type DocumentInfo = { name?: string; folder?: string; fullscreen?: boolean };
 
-export function App({ session, langCode }: { session: Session; langCode: string }) {
+export function App({ session }: { session: Session }) {
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const [agentConnected, setAgentConnected] = useState(false);
   const [theme, setTheme] = useState("light");
   const appearanceKey = useRef("");
   const [info, setInfo] = useState<DocumentInfo>({});
   const [dirty, setDirtyState] = useState(false);
-  const t = uiStrings(langCode);
+  const t = uiStrings;
   useTitlebarHoles();
 
   useEffect(() => {
@@ -206,7 +206,7 @@ export function App({ session, langCode }: { session: Session; langCode: string 
     <Excalidraw
       excalidrawAPI={setApi}
       initialData={initialData as any}
-      langCode={langCode}
+      langCode="en"
       aiEnabled={false}
       UIOptions={{ canvasActions: { loadScene: false, saveToActiveFile: false, export: false } }}
       renderTopRightUI={() => (
@@ -241,10 +241,10 @@ export function App({ session, langCode }: { session: Session; langCode: string 
     >
       <CommandPalette
         customCommandPaletteItems={[
-          { label: t.newFile, category: "App", icon: NewFileIcon, shortcut: "⌘N", keywords: ["new", "file", "新增"], perform: menu("new") },
-          { label: t.open, category: "App", icon: OpenIcon, shortcut: "⌘O", keywords: ["open", "開啟"], perform: menu("open") },
-          { label: t.save, category: "App", icon: SaveIcon, shortcut: "⌘S", keywords: ["save", "儲存"], perform: menu("save") },
-          { label: t.saveAs, category: "App", icon: SaveAsIcon, shortcut: "⇧⌘S", keywords: ["save as", "另存"], perform: menu("saveAs") },
+          { label: t.newFile, category: "App", icon: NewFileIcon, shortcut: "⌘N", keywords: ["new", "file"], perform: menu("new") },
+          { label: t.open, category: "App", icon: OpenIcon, shortcut: "⌘O", keywords: ["open"], perform: menu("open") },
+          { label: t.save, category: "App", icon: SaveIcon, shortcut: "⌘S", keywords: ["save"], perform: menu("save") },
+          { label: t.saveAs, category: "App", icon: SaveAsIcon, shortcut: "⇧⌘S", keywords: ["save as"], perform: menu("saveAs") },
         ]}
       />
       <MainMenu>

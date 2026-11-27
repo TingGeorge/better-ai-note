@@ -62,7 +62,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleVersion</key><string>$VERSION</string>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
   <key>CFBundleLocalizations</key>
-  <array><string>en</string><string>zh-Hant</string><string>zh-Hans</string><string>zh-HK</string><string>ja</string></array>
+  <array><string>en</string></array>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.graphics-design</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>

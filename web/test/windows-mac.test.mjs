@@ -1,7 +1,7 @@
 // Several drawings at once, each in its own window (macOS CI, after ui-mac.test.mjs left a
 // drawing open): opening a second file adds a window, agents work on the frontmost drawing,
 // opening a file that is already open brings its window forward, ⌘W closes just that window.
-//   EXCALIDRAW_MAC_HOME=… EXCALIDRAW_APP_PATH=…/Invic.app node --test test/windows-mac.test.mjs
+//   INVIC_HOME=… EXCALIDRAW_APP_PATH=…/Invic.app node --test test/windows-mac.test.mjs
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { test } from "node:test";
 
-const HOME = process.env.EXCALIDRAW_MAC_HOME;
+const HOME = process.env.INVIC_HOME;
 const APP = process.env.EXCALIDRAW_APP_PATH;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

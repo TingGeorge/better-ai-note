@@ -28,8 +28,8 @@ func launchApp() throws {
     let env = ProcessInfo.processInfo.environment
     var args = ["-g"]
     // Keep the app and this server on the same support folder (tests use a temporary one).
-    if let home = env["EXCALIDRAW_MAC_HOME"], !home.isEmpty {
-        args += ["--env", "EXCALIDRAW_MAC_HOME=\(home)"]
+    if let home = env["INVIC_HOME"], !home.isEmpty {
+        args += ["--env", "INVIC_HOME=\(home)"]
     }
     if let path = env["EXCALIDRAW_APP_PATH"], !path.isEmpty {
         args.append(path)

@@ -84,17 +84,17 @@ final class StartWindowController: NSObject, NSWindowDelegate {
         name.font = .systemFont(ofSize: 22, weight: .bold)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         let subtitle = NSTextField(
-            labelWithString: L10n.t("Version \(version) · Works offline", "版本 \(version) · 離線可用"))
+            labelWithString: "Version \(version) · Works offline")
         subtitle.font = .systemFont(ofSize: 12)
         subtitle.textColor = .secondaryLabelColor
 
         let actions = NSStackView(views: [
             ActionRow(
-                symbol: "doc.badge.plus", title: L10n.t("New File…", "新增檔案…"), shortcut: "⌘N", prominent: true,
+                symbol: "doc.badge.plus", title: "New File…", shortcut: "⌘N", prominent: true,
                 action: onNew),
-            ActionRow(symbol: "folder", title: L10n.t("Open…", "開啟檔案…"), shortcut: "⌘O", action: onOpen),
+            ActionRow(symbol: "folder", title: "Open…", shortcut: "⌘O", action: onOpen),
             ActionRow(
-                symbol: "sparkles", title: L10n.t("Connect an AI Agent…", "連接 AI Agent…"), shortcut: nil,
+                symbol: "sparkles", title: "Connect an AI Agent…", shortcut: nil,
                 action: onAgentSetup),
         ])
         actions.orientation = .vertical
@@ -120,9 +120,9 @@ final class StartWindowController: NSObject, NSWindowDelegate {
         let right = ContentBackgroundView()
         right.translatesAutoresizingMaskIntoConstraints = false
 
-        let header = NSTextField(labelWithString: L10n.t("Recent", "最近使用"))
+        let header = NSTextField(labelWithString: "Recent")
         header.font = .systemFont(ofSize: 13, weight: .semibold)
-        search.placeholderString = L10n.t("Search", "搜尋")
+        search.placeholderString = "Search"
         search.controlSize = .regular
         search.sendsSearchStringImmediately = true
         search.target = self
@@ -228,8 +228,8 @@ final class StartWindowController: NSObject, NSWindowDelegate {
         emptyLabel.isHidden = !shown.isEmpty
         emptyLabel.stringValue =
             files.isEmpty
-            ? L10n.t("No recent files yet.\nPress ⌘N to create one.", "還沒有最近使用的檔案\n按 ⌘N 建立第一個")
-            : L10n.t("No matches", "找不到符合的檔案")
+            ? "No recent files yet.\nPress ⌘N to create one."
+            : "No matches"
     }
 }
 
@@ -378,7 +378,7 @@ private final class RecentRow: HoverRow {
         name = NSTextField(labelWithString: url.deletingPathExtension().lastPathComponent)
         detail = NSTextField(
             labelWithString: recoverable
-                ? L10n.t("Unsaved changes — click to restore", "有未儲存的變更，點一下恢復")
+                ? "Unsaved changes — click to restore"
                 : (url.deletingLastPathComponent().path as NSString).abbreviatingWithTildeInPath)
         date = NSTextField(labelWithString: Self.relativeDate(of: url))
         super.init(action: open)
@@ -424,10 +424,10 @@ private final class RecentRow: HoverRow {
         setAccessibilityHelp(recoverable ? detail.stringValue : url.deletingLastPathComponent().path)
 
         let menu = NSMenu()
-        menu.addItem(ClosureMenuItem(title: L10n.t("Show in Finder", "在 Finder 中顯示")) {
+        menu.addItem(ClosureMenuItem(title: "Show in Finder") {
             NSWorkspace.shared.activateFileViewerSelecting([url])
         })
-        menu.addItem(ClosureMenuItem(title: L10n.t("Remove from Recent", "從最近使用中移除"), run: remove))
+        menu.addItem(ClosureMenuItem(title: "Remove from Recent", run: remove))
         self.menu = menu
         hoverChanged()
     }
@@ -447,11 +447,13 @@ private final class RecentRow: HoverRow {
         date.textColor = .secondaryLabelColor
     }
 
-    /// "14:05" today, "Yesterday", else "Sep 20" (in the system language).
+    /// "14:05" today, "Yesterday", else "Sep 20". The interface is English, so the month names are
+    /// English; the region (date order, 12/24-hour clock) is the user's own.
     private static func relativeDate(of url: URL) -> String {
         guard let modified = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
         else { return "" }
-        let locale = Locale(identifier: Locale.preferredLanguages.first ?? "en")
+        let region = Locale.current.region?.identifier
+        let locale = Locale(identifier: region.map { "en_\($0)" } ?? "en")
         let calendar = Calendar.current
         let formatter = DateFormatter()
         formatter.locale = locale
@@ -459,7 +461,7 @@ private final class RecentRow: HoverRow {
             formatter.timeStyle = .short
             return formatter.string(from: modified)
         }
-        if calendar.isDateInYesterday(modified) { return L10n.t("Yesterday", "昨天") }
+        if calendar.isDateInYesterday(modified) { return "Yesterday" }
         formatter.setLocalizedDateFormatFromTemplate(
             calendar.isDate(modified, equalTo: Date(), toGranularity: .year) ? "MMMd" : "yMMMd")
         return formatter.string(from: modified)

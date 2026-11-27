@@ -4,9 +4,9 @@ public enum AppPaths {
     public static let bundleIdentifier = "io.github.tinggeorge.invic"
 
     /// Where the app keeps its autosave, settings and the bridge socket.
-    /// `EXCALIDRAW_MAC_HOME` overrides it (used by tests).
+    /// `INVIC_HOME` overrides it (used by tests).
     public static var supportDirectory: URL {
-        if let dir = ProcessInfo.processInfo.environment["EXCALIDRAW_MAC_HOME"], !dir.isEmpty {
+        if let dir = ProcessInfo.processInfo.environment["INVIC_HOME"], !dir.isEmpty {
             return URL(fileURLWithPath: dir, isDirectory: true)
         }
         let home = FileManager.default.homeDirectoryForCurrentUser

@@ -49,7 +49,7 @@ function appBridge(home, method, params = {}) {
 
 test("excalidraw-mcp end to end", { skip: !MCP_BIN && "set MCP_BIN" }, async (t) => {
   // Keep the socket path short: macOS limits Unix socket paths to 104 bytes.
-  const home = process.env.EXCALIDRAW_MAC_HOME || mkdtempSync(join(REAL_APP ? "/tmp" : tmpdir(), "exm-"));
+  const home = process.env.INVIC_HOME || mkdtempSync(join(REAL_APP ? "/tmp" : tmpdir(), "exm-"));
   // realpath: on macOS the temp folder is a symlink (/var -> /private/var).
   const work = realpathSync(mkdtempSync(join(tmpdir(), "exm-work-")));
   const file = join(work, "diagram.excalidraw");
@@ -69,7 +69,7 @@ test("excalidraw-mcp end to end", { skip: !MCP_BIN && "set MCP_BIN" }, async (t)
     new StdioClientTransport({
       command: MCP_BIN,
       cwd: work,
-      env: { ...process.env, EXCALIDRAW_MAC_HOME: home },
+      env: { ...process.env, INVIC_HOME: home },
       stderr: "inherit",
     }),
   );
@@ -78,7 +78,7 @@ test("excalidraw-mcp end to end", { skip: !MCP_BIN && "set MCP_BIN" }, async (t)
   /** The user opens the file in the app (Finder double-click / File > Open). */
   async function userOpens(path) {
     if (!REAL_APP) return fake.openFile(path);
-    execFileSync("open", ["-g", "-a", APP, "--env", `EXCALIDRAW_MAC_HOME=${home}`, path]);
+    execFileSync("open", ["-g", "-a", APP, "--env", `INVIC_HOME=${home}`, path]);
     for (let i = 0; i < 100; i++) {
       const res = await call("get_scene", { include_elements: false });
       if (!res.isError && JSON.parse(textOf(res)).file === path) {

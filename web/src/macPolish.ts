@@ -102,10 +102,9 @@ let tipEl: HTMLDivElement | null = null;
 let tipTimer: ReturnType<typeof setTimeout> | undefined;
 let tipFor: Element | null = null;
 
-const zh = () => document.documentElement.lang.startsWith("zh");
-const LABEL_TIPS: Record<string, [string, string]> = {
-  arrowhead_start: ["起點箭頭", "Start arrowhead"],
-  arrowhead_end: ["終點箭頭", "End arrowhead"],
+const LABEL_TIPS: Record<string, string> = {
+  arrowhead_start: "Start arrowhead",
+  arrowhead_end: "End arrowhead",
 };
 
 /** Moves `title` (the native tooltip WKWebView doesn't show) into our own tooltip. */
@@ -113,7 +112,7 @@ function adoptTitles(root: ParentNode) {
   // Excalidraw's ☰ button has no label at all.
   const menu = root.querySelector<HTMLElement>(".main-menu-trigger:not([data-mac-tip])");
   if (menu) {
-    menu.dataset.macTip = zh() ? "選單" : "Menu";
+    menu.dataset.macTip = "Menu";
     if (!menu.hasAttribute("aria-label")) menu.setAttribute("aria-label", menu.dataset.macTip);
   }
   const els = root.querySelectorAll<HTMLElement>(
@@ -127,7 +126,7 @@ function adoptTitles(root: ParentNode) {
       el.removeAttribute("title");
     } else if (!el.dataset.macTip && el.matches("button[aria-label]") && !el.textContent?.trim()) {
       const label = el.getAttribute("aria-label") ?? "";
-      const tip = LABEL_TIPS[label]?.[zh() ? 0 : 1] ?? label;
+      const tip = LABEL_TIPS[label] ?? label;
       // Some of Excalidraw's labels are internal names ("arrowhead_start"): no tooltip then.
       if (!/^[a-z]+(_[a-z]+)+$/.test(tip)) el.dataset.macTip = tip;
     }
@@ -184,7 +183,7 @@ function polishDialogs(root: ParentNode) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "mac-dialog-close";
-    button.setAttribute("aria-label", zh() ? "關閉" : "Close");
+    button.setAttribute("aria-label", "Close");
     button.innerHTML = CLOSE_ICON;
     button.addEventListener("click", () => {
       modal?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }));
