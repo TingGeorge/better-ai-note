@@ -7,3 +7,9 @@ node_modules/
 
 # Xcode per-user state
 xcuserdata/
+
+# Build output (Mac app, web page, Swift)
+build/
+web/dist/
+mac/.build/
+mac/.swiftpm/

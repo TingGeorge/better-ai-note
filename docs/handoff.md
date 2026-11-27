@@ -6,7 +6,7 @@
 
 ## 現在在做什麼
 
-**設計全部定案，文件已更新，等使用者說下一步（2026-11-27）。還沒開始實作；使用者說過不要直接開始做。**
+**設計全部定案（整體、畫面、後端），文件都已 commit 並 push（2026-11-27）。還沒開始實作，一行程式都沒寫；等使用者說「開始」，從第 1 部分做。**
 
 - Figma 定案：<https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1>（file key `5DfsHafSo4iqhnIUUlmVWN`），`App` 頁，22 個畫面：Home 2、Canvas 側邊欄關 10、Canvas 側邊欄開 2、Settings 3、Setup check 5，加元件和設計變數。舊版在兩個 Archive 頁。
 - 畫面的決定都寫進了 `architecture.html` 的「畫面」、技術架構文件、概念文件、README；截圖在 `docs/images/`。
@@ -24,7 +24,7 @@
 
 ## 還沒決定的
 
-- App 叫什麼名字（不能用「Claude Code」或 Anthropic 的名稱；設計稿暫時寫 Excalidraw）。
+- App 的名字：使用者 2026-11-27 說用「Invic」，取自拉丁文 invicem（輪流、互相：人和 AI 在同一張畫布上輪流寫、互相改）；同名產品和商標還沒查（1b 用：顯示名 Invic、bundle id `io.github.tinggeorge.invic`、資料夾 `~/Library/Application Support/Invic/`）。設計稿和文件裡還寫 Excalidraw，還沒改。
 - 要不要補一整套深色版本的畫面。
 - 其他開放問題見 architecture.html 的「暫定和還沒決定」。
 
@@ -52,8 +52,10 @@
 
 ## Git 狀態
 
-- 分支 `main`，到 `33aa09b`（畫面定案）為止都已 commit 並 push。
-- 後端架構頁（`docs/backend-architecture.html`、五個 `docs/excalidraw/backend-*.excalidraw`）和連到它的幾處修改**還沒 commit**。
+- 分支 `main`，到 `568998e`（後端架構頁）為止都已 commit 並 push。
+- 之後的都還沒 commit：1a 搬進來的 `mac/`、`web/`、`scripts/`、`THIRD_PARTY_NOTICES.md`，加上 `.gitignore`、`LICENSE`、`README.md` 和這份筆記的修改。1a 已由 Opus xhigh 審查（沒有擋住的問題），等使用者同意才 commit；commit 訊息要寫上游網址和 `d332730`。
+- `build/Excalidraw.app` 是 1a 驗證時 build 出來的（已被忽略，不會 commit），和裝好的 Excalidraw 同一個 bundle id：不要啟動。
+- `web/test/` 裡的 `*-mac` 測試和 `mcp.test.mjs` 會用程序名稱「Excalidraw」去關 App、送按鍵：1b 改名之前不要跑。
 
 ## 等「全部結束後」再討論的
 
@@ -67,7 +69,10 @@
 
 一次做一部分；做完我自己審查，停下來等使用者審查，他同意才 commit 和做下一部分。
 
-1. 把 excalidraw-mac 的程式搬進這個 repo（`mac/`、`web/`），不改功能。
+1. 把 excalidraw-mac 的程式搬進這個 repo（`mac/`、`web/`）。分兩塊：
+   - 1a 原樣搬（直接複製，上游 commit `d332730`），不改任何程式。2026-11-27 使用者說開始，進行中。
+   - 1b 和原本裝好的 Excalidraw App 分開：自己的 bundle id、資料夾、socket、檔案類型。名字用 Invic（使用者已確認）。1a 審查完、使用者同意後才動手。
+   - 1b 做完前，新 build 的 App 和原本的 App 共用資料夾和 socket：**不要啟動它、不要關掉原本的 Excalidraw**（裡面有沒存檔的東西）。
 2. 後端 `/generate`，切成小塊：`agent.ts`、`prompt.ts`、`memory.ts`、`index.ts`。
 3. Swift 外殼啟動伺服器（隨機 token），關 App 時一起關。
 4. AI 主流程：AI 按鈕、輸入框、處理中／完成／失敗；拿掉「AI agent connected」。
@@ -77,6 +82,8 @@
 8. 語音：`/transcribe`、錄音、麥克風按鈕。
 
 收尾：把伺服器編成單一程式包進 App、重新簽章、量大小。
+
+誰做什麼（使用者 2026-11-27 指定）：寫程式由 Opus high 的子代理做，審查由 Opus xhigh 的子代理做，其他工作我自己選子代理；主對話只和使用者討論和計畫。
 
 審查的分工：使用者細看後端和「各部分怎麼接起來」（後端每一塊動手前先給圖和格式讓他確認）；前端和 Mac App 他只用用看，所以我要自己對照 Figma 檢查仔細、給截圖。
 

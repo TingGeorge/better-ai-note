@@ -46,7 +46,10 @@ ai-note-app/
 │   ├── bun.lock
 │   ├── tsconfig.json
 │   └── .env.example               設定範本（複製成 .env）
-├── mac/、web/                     計畫：Mac App 外殼和畫布頁面（從 excalidraw-mac 搬進來改）
+├── mac/                           Mac App 外殼和畫布的 MCP 伺服器（Swift；從 excalidraw-mac 搬進來，還沒改）
+├── web/                           畫布頁面（React + Excalidraw；從 excalidraw-mac 搬進來，還沒改）
+├── scripts/build-app.sh           把 web/ 和 mac/ 包成 App
+├── THIRD_PARTY_NOTICES.md         第三方軟體的授權（web 的 build 產生）
 ├── .gitignore
 ├── LICENSE
 └── README.md
