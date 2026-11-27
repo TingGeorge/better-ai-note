@@ -9,6 +9,13 @@ Read `docs/handoff.md` first: it says what is done, what is next, and what canno
 - `server/` Bun server that will run the Claude Agent SDK; bundled into the app later.
 - `scripts/build-app.sh` builds `build/Invic.app` (macOS only).
 
+## UI must follow the Figma design
+
+- The final design is in Figma: <https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1> (page `App`, 22 screens plus components and design variables). Build every screen to match it: layout, spacing, colours, text, states.
+- If you cannot open Figma, use `docs/images/` and the "畫面" section of `docs/architecture.html`. These cover only part of the design.
+- Do not invent UI. If a screen or state you need is not visible to you, stop and ask the owner for it (a Figma export or access) instead of guessing.
+- When you report UI work, say which screens you compared against the design and which you could not.
+
 ## Checks
 
 - `cd server && bun test && bun run typecheck`

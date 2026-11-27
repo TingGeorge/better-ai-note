@@ -19,7 +19,7 @@
 | `server/`（`bun test`、typecheck） | 可以 | 可以 |
 | 真的叫 Claude（Agent SDK） | 用使用者已登入訂閱的 Claude Code | 沒有登入。測試不能依賴真的模型：用假的 Claude Code 執行檔或把 SDK 那一層隔開來測。要在 CI 跑真的模型得由使用者提供 `CLAUDE_CODE_OAUTH_TOKEN`（`claude setup-token`）當 secret，這要他決定，不要自己加 |
 | 畫布 MCP（`excalidraw-mcp`）＋ Invic App | 可以啟動 | 只有 macOS runner 上可以。`web/test/fake-app.mjs` 是假的 App，`mcp.test.mjs` 用它可以在沒有 App 的情況下測 MCP 程式（MCP 程式是 Swift，也要 macOS 才能編） |
-| Figma | 有 MCP 可以讀 | 多半沒有。畫面以 `docs/images/` 的截圖和 `architecture.html` 的「畫面」為準 |
+| Figma | 有 MCP 可以讀 | 多半沒有。**畫面一定要照 Figma 做**（使用者 2026-11-27 特別確認）。打不開就用 `docs/images/` 的 5 張截圖和 `architecture.html` 的「畫面」，但它們只涵蓋 22 個畫面的一部分；看不到的畫面不要自己設計，停下來向使用者要 |
 | 暫存資料夾、我的記憶檔、使用者的全域規則 | 有 | 沒有。需要的都已寫進這份筆記和 repo 根目錄的 `CLAUDE.md` |
 
 ### CI 還沒有，要你建
@@ -94,7 +94,66 @@
 - 1b 已 commit（`eaad45d`，沒 push）。改名前留下的兩個舊程式（`mac/.build/out/Products/{Debug,Release}/Excalidraw`）使用者同意後已用 `trash` 丟掉。
 - 圖示：使用者之後會把設計好的 icon 傳來，到時候換。「Invic Help」的連結等第 6、7 部分一起處理（使用者同意）。
 
-## 為第 2 部分查到的 SDK 事實（2026-11-27，只查了官方文件，沒看型別檔、沒實測）
+## 第 2 部分：在使用者的 Mac 上實測到的 SDK 行為（2026-11-27）
+
+SDK `@anthropic-ai/claude-agent-sdk` 0.3.332，Claude Code 2.1.332，用 Bun 跑，`settingSources: []`，一個叫 `canvas` 的 MCP。實驗程式：[`experiments/sdk-options.ts`](experiments/sdk-options.ts)。當時 Invic 沒開文件，畫布工具都回「No drawing is open」，所以只證明了管線通，沒證明真的畫得出來。
+
+**工具限制（照這一組寫）**
+
+```ts
+tools: [],                         // 沒有內建工具
+allowedTools: SIX,                 // 六個 mcp__canvas__* ；少了它每次呼叫都被拒絕
+disallowedTools: ["mcp__canvas__clear_canvas", "mcp__canvas__zoom_to_fit"], // 從清單拿掉
+permissionMode: "dontAsk",         // 沒預先允許的一律拒絕，不會問
+mcpServersDelivery: "initialize",  // 不加會印 deprecation 警告
+```
+
+- 這樣 init 訊息的 `tools` 剛好是那六個，`mcp_servers` 是 `[{name:"canvas", status:"connected"}]`。
+- 只寫 `allowedTools`（沒有 `tools: []`）會多出 28 個內建工具。`tools` 裡寫 MCP 的名字不會過濾 MCP 工具。
+- MCP 路徑錯：init 的 `tools` 是空的、status 是 `failed`，但這次執行照樣「成功」，所以一定要自己檢查。
+
+**檢查工具清單的時機**
+
+- 串流輸入模式下，init 要等第一則使用者訊息送出後才來。在 init 時 `abort()` 擋不住第一次模型呼叫。
+- 不花模型回合的檢查方式：送訊息前 `await q.initializationResult()` 和輪詢 `q.mcpServerStatus()`（一開始是 `pending`，約 0.3 秒變 `connected`）。注意 `mcpServerStatus()` 列的是沒過濾的八個工具；過濾後的清單只在 init 訊息裡。
+
+**中止**
+
+- `abortController.abort()` 不是立刻生效：呼叫後約 2 秒 `for await` 才丟出錯誤（`instanceof AbortError`，訊息 `Claude Code process aborted by user`），這段時間裡**已經送出的工具呼叫還是會執行**。
+- `await q.interrupt()` 才是快的：約 40 毫秒，還沒執行的工具呼叫會被拒絕、不會跑；之後來一個 `error_during_execution`（`terminal_reason: "aborted_tools"`）的結果，再丟出一般的 `Error`。
+- 建議：取消時先 `interrupt()` 再 `abort()`。子程序（claude、excalidraw-mcp）約 1 秒內都會消失。
+
+**圖片和系統提示**
+
+- 串流輸入加圖片可以用：`{type:"user", parent_tool_use_id:null, message:{role:"user", content:[{type:"text",…}, {type:"image", source:{type:"base64", media_type:"image/png", data}}]}}`。generator 給一則就結束，查詢會正常結束。
+- `systemPrompt` 給一般字串可以用。不給的話看起來是空的（不是 Claude Code 的預設提示），這點是推論。
+
+**結果和錯誤**
+
+- 每一種出錯的結果之後，iterator 都會再丟出 `Error("Claude Code returned an error result: …")`。要用 try/catch 包住，並以先收到的 result 訊息為準。
+- 超過回合數：`subtype: "error_max_turns"`。
+- 找不到 Claude Code：一開始就丟出 `Claude Code native binary not found at …`。
+- 模型名字錯：assistant 訊息 `error: "model_not_found"`，結果是 `subtype: "success"` 但 `is_error: true`。**所以不能只看 `subtype`，要看 `is_error`。**
+- 沒登入、額度用完沒有實測（不能為了測試登出）。型別裡有：assistant 訊息的 `error`（`authentication_failed`、`rate_limit`、`billing_error` 等），和 `rate_limit_event`（`status: "allowed" | "allowed_warning" | "rejected"`、`rateLimitType`、`resetsAt`）。
+
+**模型和速度**（「say ok」，各一次，從開始到結束）
+
+| `model` | 實際模型 | 第一個回應 | 全部 |
+|---|---|---|---|
+| 不給 | claude-opus-5-5 | 3.6 秒 | 6.4 秒 |
+| `sonnet` | claude-sonnet-5-5 | 1.6 秒 | 5.0 秒 |
+| `opus` | claude-opus-5-5 | 2.1 秒 | 5.0 秒 |
+| `haiku` | claude-haiku-5-5 | 1.6 秒 | 4.2 秒 |
+
+- 啟動到 init 約 0.2–0.3 秒。最後一句話之後還要等 1.6–2.4 秒結果才來，再 0.6–0.9 秒 iterator 才結束。
+- 用哪個模型**還沒決定**，要問使用者。程式裡一定要明確寫出來，不要用預設。
+
+**其他**
+
+- `persistSession` 預設是 true，每次執行都會在 `~/.claude/projects/` 留一份紀錄。接上 `sessionStore` 後要確認這件事。
+- 一次 Opus 的測試回報了不合理的費用（`total_cost_usd` 約 1.03），原因沒查。
+
+## 先前只從官方文件查到的（部分已被上面的實測取代）
 
 - 中止用 `options.abortController`；`interrupt()` 只在串流輸入模式可用。中止時 `for await` 會丟出錯誤（訊息 `Operation aborted` 之類）。畫布 MCP 的子程序會不會跟著停，文件沒寫，要實測。
 - 帶圖片一定要用串流輸入（`prompt` 給 async generator，圖片放 `message.content`）。
