@@ -6,7 +6,56 @@
 
 ## 現在在做什麼
 
-**實作中。第 1 部分做完（1a 原樣搬入 `80e9ce5`、1b 改名 Invic `eaad45d`）。第 2 部分（後端 `/generate`）和第 3 部分（外殼啟動伺服器）還沒寫任何程式。2026-11-27 使用者決定把開發交給雲端的 agent 接手，並用 GitHub 的 CI/CD 做自動化測試。**
+**實作中。第 1 部分做完（1a 原樣搬入 `80e9ce5`、1b 改名 Invic `eaad45d`）。CI 的 workflow 寫好並 push 了（還沒審查）。第 2 部分（後端 `/generate`）只裝了 SDK，還沒寫任何程式；第 3 部分（外殼啟動伺服器）還沒開始。2026-11-27 使用者決定把開發交給雲端的 agent 接手，並用 GitHub 的 CI/CD 做自動化測試。**
+
+## 第一個雲端對話做到哪（2026-11-27，先讀這一節）
+
+使用者要求：把整個產品做出來、自動化測試，並照 `CLAUDE.md` 的方式用子代理。這個對話因為讀不到 Figma 而交接給新的雲端對話。分支：`claude/wonderful-ritchie-9g02hh`（只 push 到這個分支，不開 PR、不碰 `main`）。
+
+### 使用者今天的決定
+
+- `/generate` 的模型：`opus`。程式裡仍要從設定明確傳入（例如外殼設 `CLAUDE_MODEL=opus`），程式碼不寫預設值。
+- 記憶檔裡的截圖：**照存圖片**，不換成一行字。這解掉了下面「和已定的設計衝突」那一條；`backend-architecture.html` 還寫著「換成一行字」，**還沒改**。
+- 每一部分審查完就 commit + push 到上面的分支。
+- repo 已改成公開，GitHub 的 runner（含 macOS）可以用：CI 的結果由 agent 自己看、自己修到通過。
+
+### 已做
+
+- **CI**：`.github/workflows/ci.yml`（commit `0578c40`，已 push）。三個 job：`server`、`web`、`mac`。
+  - `server` 和 `web` 兩個 job 的指令在雲端容器裡實際跑過都通過（`bun test` 5 個、`npm test` 42 個、`THIRD_PARTY_NOTICES.md` 檢查通過）。
+  - `mac` job 從來沒跑過。第一次 CI：<https://github.com/TingGeorge/better-ai-note/actions/runs/45977508841>，寫這一行時還在跑，**結果沒看**。接手後先看它，紅的就修。
+  - **還沒經過 Opus xhigh 審查。**
+  - 改名後程式實際用的名字：環境變數仍是 `EXCALIDRAW_MAC_HOME` 和 `EXCALIDRAW_APP_PATH`，MCP 程式仍叫 `excalidraw-mcp`；App 是 `build/Invic.app`，程序名 `Invic`。
+  - 沒驗證：`npx playwright-core install --with-deps chromium-headless-shell`（容器的 proxy 擋住下載）；`setup-bun@v2` 裝的是最新的 Bun，lockfile 是 1.4.4 產生的。
+- **後端**：只在 `server/package.json` 加了 `@anthropic-ai/claude-agent-sdk`，固定在 `0.3.332`（和實測的版本相同）。`bun test` 和 typecheck 通過。`agent.ts`、`prompt.ts`、`log.ts`、`prompts/` **都還沒寫**。
+
+### 寫 2a／2b 前要知道的（子代理對照 SDK 的 `sdk.d.ts` 和 `sdk.mjs` 查到的）
+
+- 下面「實測到的 SDK 行為」裡提到的選項和型別名稱，在 0.3.332 的型別裡都存在。
+- **輸入的 generator 送完訊息後不能馬上結束**：SDK 在 generator 結束時就關掉 Claude Code 的 stdin，而 `interrupt()` 走的是 stdin，所以取消會失敗。generator 要開著，等第一個 result 來了（或我們自己停掉）才結束。這是讀程式得到的，沒實測。
+- 額度用完可能還有別的表現方式：型別裡有 `USAGE_LIMIT_ERROR_PREFIXES`、`ORG_POLICY_LIMIT_PREFIXES`。實際是哪一種仍然沒測。
+- `sessionStore` 不能和 `persistSession: false` 一起用（和之前查到的一致）。
+- 設計和工作說明不一致的地方，還沒決定：
+  - 設計寫 `runAgent({ prompt, noteFolder, signal })`、`buildPrompt({ request, selectedIds, screenshot })`；「我替使用者做的決定」寫輸入分成 `rules` 和 `content`。
+  - 設計沒有「MCP 沒連上」和「啟動設定缺少」的錯誤種類。子代理打算用 `unexpected_tools` 和 `agent_failed`（訊息裡寫出缺哪個變數）。
+  - 提示詞檔案的位置讀成 `server/prompts/`。
+- 子代理打算的做法（還沒實作，可以照用）：
+  - 測試：`runAgent` 多一個參數注入 `query`，預設是 SDK 的；測試用假的。做假的 Claude Code 執行檔要模擬整套控制協定，太費工。
+  - 一次執行的順序：讀設定 → `initializationResult()` → 每 100 毫秒輪詢 `mcpServerStatus()` 最多 10 秒，`canvas` 是 `connected` 才送訊息 → init 的 `tools` 不是剛好六個就停 → 取消時 `interrupt()`（最多等 1 秒）再 `abort()` → 以第一個 result 為準，但讀到結束，讓記憶寫完。
+  - 沒驗證：找不到 Claude Code 時 `initializationResult()` 是丟錯還是卡住。
+
+### Figma：這個對話讀不到
+
+- Figma 連接器顯示已連線，但這個對話只有 `create_branch` 和 Weave 的工具；`create_session`、`get_design_context`、`get_screenshot`、`get_metadata` 叫不到。使用者說已經調過權限，這個對話裡還是沒有（推測工具清單在對話開始時就固定了，沒查證）。
+- 接手的對話先試這四個工具。可以的話，用 Fable（low 或 medium）的子代理把 `App` 頁 22 個畫面的截圖和設計變數存進 repo（例如 `docs/figma/`），之後的畫面工作都從那裡讀。
+- 還是不行就請使用者匯出 PNG。第 4–8 部分的畫面不要自己設計。
+
+### 接手後的順序
+
+1. 看第一次 CI 的結果，修到通過；把 `ci.yml` 交 Opus xhigh 審查。
+2. 試 Figma（上面）。
+3. 第 2 部分：2a＋2b（Opus high 寫、Opus xhigh 審），再 2c（記憶，截圖照存）、2d（`/generate` 接線）。把 `backend-architecture.html` 改成和今天的決定一致。
+4. 第 3 部分起照最下面的順序。CI 和後端、Figma 匯出互不相干，可以同時開子代理。
 
 ## 給接手的雲端 agent（先讀這一節）
 
