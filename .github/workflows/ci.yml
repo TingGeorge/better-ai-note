@@ -1,0 +1,99 @@
+name: CI
+
+# Based on excalidraw-mac's workflow (github.com/TingGeorge/excalidraw-mac, d332730),
+# without its release job and macOS matrix.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun test
+      - run: bun run typecheck
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: THIRD_PARTY_NOTICES.md is up to date
+        # The build regenerates it from what the page bundles (scripts/third-party.mjs).
+        run: |
+          git diff --exit-code -- ../THIRD_PARTY_NOTICES.md || { echo "THIRD_PARTY_NOTICES.md is out of date: run npm run build in web/ and commit it"; exit 1; }
+      - run: npm run typecheck
+      # The harness launches Playwright's default headless browser when PW_CHROMIUM is unset.
+      - run: npx playwright-core install --with-deps chromium-headless-shell
+      - run: npm test
+
+  mac:
+    # The *-mac tests send keys and clicks to the frontmost app: fine on a clean runner,
+    # never on a person's Mac.
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      APP: ${{ github.workspace }}/build/Invic.app
+      # A fresh support folder for the app and the MCP server; short because macOS
+      # limits Unix socket paths (bridge.sock) to 104 bytes.
+      EXCALIDRAW_MAC_HOME: /tmp/invic-ci
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build Invic.app
+        working-directory: .
+        run: ./scripts/build-app.sh
+
+      - name: MCP end to end against the real app (the MCP server starts the app itself)
+        env:
+          MCP_BIN: ${{ env.APP }}/Contents/MacOS/excalidraw-mcp
+          EXCALIDRAW_APP_PATH: ${{ env.APP }}
+          REAL_APP: "1"
+        run: node --test test/mcp.test.mjs
+
+      # The tests below run in this order: each uses the drawing the one before left open.
+      - name: Real clicks on the drawing window
+        env:
+          EXCALIDRAW_APP_PATH: ${{ env.APP }}
+        run: node --test test/ui-mac.test.mjs
+
+      - name: One window per drawing
+        env:
+          EXCALIDRAW_APP_PATH: ${{ env.APP }}
+        run: node --test test/windows-mac.test.mjs
+
+      - name: Idle energy report
+        # Only a report for the log (CPU time on a shared runner varies), as upstream.
+        continue-on-error: true
+        run: node test/energy-mac.mjs
+
+      - name: Emoji sharp on a zoomed-in canvas
+        run: node test/emoji-mac.mjs
