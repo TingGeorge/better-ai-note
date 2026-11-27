@@ -6,7 +6,7 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [
         // The app itself (AppKit + WKWebView; macOS only).
-        .executable(name: "Excalidraw", targets: ["ExcalidrawApp"]),
+        .executable(name: "Invic", targets: ["ExcalidrawApp"]),
         // The MCP server agents launch; it talks to the running app over a Unix socket.
         .executable(name: "excalidraw-mcp", targets: ["ExcalidrawMCP"]),
     ],

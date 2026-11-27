@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             try bridge.start()
             self.bridge = bridge
         } catch {
-            NSLog("Excalidraw: AI agent bridge not available: \(error)")
+            NSLog("Invic: AI agent bridge not available: \(error)")
         }
 
         // Launched by opening files (Finder, `open file.excalidraw`): go straight to them. They
@@ -58,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         }
         pendingFiles = []
 
-        // `kill` / `killall Excalidraw`: keep unsaved changes as recovery copies and exit
+        // `kill` / `killall Invic`: keep unsaved changes as recovery copies and exit
         // without questions. They come back the next time each file is opened.
         signal(SIGTERM, SIG_IGN)
         let source = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
@@ -305,11 +305,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     /// Shows how to connect Claude Code (or any MCP client) to this app.
     @objc func showAgentSetup(_ sender: Any?) {
         let server = Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/excalidraw-mcp").path
-        let claudeCommand = "claude mcp add excalidraw --scope user -- \(shellQuote(server))"
+        let claudeCommand = "claude mcp add invic --scope user -- \(shellQuote(server))"
         let jsonConfig = """
             {
               "mcpServers": {
-                "excalidraw": { "command": \(JSON.string(server).text) }
+                "invic": { "command": \(JSON.string(server).text) }
               }
             }
             """
@@ -374,17 +374,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             return i
         }
 
-        submenu("Excalidraw", [
-            item(t("About Excalidraw", "關於 Excalidraw"), #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+        submenu("Invic", [
+            item(t("About Invic", "關於 Invic"), #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
             .separator(),
             item(t("Settings…", "設定…"), #selector(showSettings(_:)), ",", target: self),
             item(t("Connect an AI Agent (MCP)…", "連接 AI Agent（MCP）…"), #selector(showAgentSetup(_:)), target: self),
             .separator(),
-            item(t("Hide Excalidraw", "隱藏 Excalidraw"), #selector(NSApplication.hide(_:)), "h"),
+            item(t("Hide Invic", "隱藏 Invic"), #selector(NSApplication.hide(_:)), "h"),
             item(t("Hide Others", "隱藏其他"), #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]),
             item(t("Show All", "顯示全部"), #selector(NSApplication.unhideAllApplications(_:))),
             .separator(),
-            item(t("Quit Excalidraw", "結束 Excalidraw"), #selector(NSApplication.terminate(_:)), "q"),
+            item(t("Quit Invic", "結束 Invic"), #selector(NSApplication.terminate(_:)), "q"),
         ])
         submenu(t("File", "檔案"), [
             item(t("New File…", "新增檔案…"), #selector(newDocument(_:)), "n", target: self),
@@ -425,7 +425,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         ])
         NSApp.windowsMenu = window
         let help = submenu(t("Help", "輔助說明"), [
-            item(t("Excalidraw for Mac Help", "Excalidraw for Mac 說明"), #selector(openHelp(_:)), target: self),
+            item(t("Invic Help", "Invic 說明"), #selector(openHelp(_:)), target: self),
             item(t("Connect an AI Agent (MCP)…", "連接 AI Agent（MCP）…"), #selector(showAgentSetup(_:)), target: self),
             .separator(),
             item(t("Acknowledgements", "致謝與授權"), #selector(showAcknowledgements(_:)), target: self),

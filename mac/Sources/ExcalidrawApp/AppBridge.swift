@@ -68,14 +68,14 @@ final class AppBridge {
             return respond(
                 .failure(
                     BridgeError(
-                        "No drawing is open in Excalidraw. Ask the user to create a new file (File > New File…) or open one in the app, then try again."
+                        "No drawing is open in Invic. Ask the user to create a new file (File > New File…) or open one in the app, then try again."
                     )))
         }
         if !Self.anytime.contains(method) && !canvas.hasDocument {
             return respond(
                 .failure(
                     BridgeError(
-                        "No drawing is open in Excalidraw. Ask the user to create a new file (File > New File…) or open one in the app, then try again."
+                        "No drawing is open in Invic. Ask the user to create a new file (File > New File…) or open one in the app, then try again."
                     )))
         }
 

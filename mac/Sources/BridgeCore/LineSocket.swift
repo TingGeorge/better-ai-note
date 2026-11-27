@@ -103,7 +103,7 @@ public final class LineConnection: @unchecked Sendable {
             } else if errno == EINTR {
                 continue
             } else if errno == EAGAIN || errno == EWOULDBLOCK {
-                throw SocketError(message: "timed out waiting for the Excalidraw app to answer", code: EAGAIN)
+                throw SocketError(message: "timed out waiting for the Invic app to answer", code: EAGAIN)
             } else {
                 throw SocketError("read")
             }
@@ -183,7 +183,7 @@ public final class LineServer: @unchecked Sendable {
         if FileManager.default.fileExists(atPath: path) {
             if let probe = try? LineConnection.connect(path: path) {
                 probe.close()
-                throw SocketError(message: "another Excalidraw app is already listening on \(path)")
+                throw SocketError(message: "another Invic app is already listening on \(path)")
             }
             unlink(path)
         }

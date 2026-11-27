@@ -1,7 +1,7 @@
 import BridgeCore
 
 let serverInstructions = """
-Draws in the Excalidraw app on this Mac, in the file the user has open. The user sees every change \
+Draws in the Invic app on this Mac, in the file the user has open. The user sees every change \
 live and can undo it with ⌘Z. You can't open, save or export files: the user saves with ⌘S. If no \
 drawing is open, ask the user to create or open one in the app. \
 Typical flow: get_scene -> add_mermaid (quickest for flowcharts) or add_elements -> render_image to \

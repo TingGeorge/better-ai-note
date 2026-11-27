@@ -25,14 +25,14 @@ function bridge(method, params = {}) {
   });
 }
 
-execFileSync("osascript", ["-e", 'tell application "Excalidraw" to activate']);
+execFileSync("osascript", ["-e", 'tell application "Invic" to activate']);
 await sleep(1000);
 await bridge("add_elements", {
   elements: [{ type: "text", id: "emoji-check", x: -3000, y: -3000, text: "🔒 private repo 🙂", fontSize: 20 }],
 });
 await bridge("zoom_to_fit", { element_ids: ["emoji-check"] }); // centred, at 100% at most
 // View › Zoom In until the canvas is scaled 4× or more, like the 268% that showed it
-const zoomIn = 'tell application "System Events" to tell process "Excalidraw" to click menu item "Zoom In" of menu "View" of menu bar item "View" of menu bar 1';
+const zoomIn = 'tell application "System Events" to tell process "Invic" to click menu item "Zoom In" of menu "View" of menu bar item "View" of menu bar 1';
 for (let i = 0; i < 60 && (await bridge("diagnostics")).zoom < 4; i++) {
   execFileSync("osascript", ["-e", zoomIn]);
   await sleep(100);

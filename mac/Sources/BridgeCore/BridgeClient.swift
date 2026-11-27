@@ -6,7 +6,7 @@ public struct BridgeError: Error, CustomStringConvertible {
     public init(_ message: String) { description = message }
 }
 
-/// Calls the running Excalidraw app:  {"id":1,"method":"…","params":{…}}  ->  {"id":1,"ok":true,"result":…}
+/// Calls the running Invic app:  {"id":1,"method":"…","params":{…}}  ->  {"id":1,"ok":true,"result":…}
 public final class BridgeClient {
     public let socketPath: String
     /// Starts the app when nobody is listening; nil = don't try.
@@ -44,12 +44,12 @@ public final class BridgeClient {
         while true {
             guard let line = try conn.readLine() else {
                 connection = nil
-                throw SocketError(message: "the Excalidraw app closed the connection")
+                throw SocketError(message: "the Invic app closed the connection")
             }
             let reply = try JSON.parse(line)
             guard case .int(let replyID)? = reply["id"], replyID == id else { continue }
             if reply["ok"]?.bool == true { return reply["result"] ?? .null }
-            throw BridgeError(reply["error"]?.string ?? "unknown error from the Excalidraw app")
+            throw BridgeError(reply["error"]?.string ?? "unknown error from the Invic app")
         }
     }
 
@@ -60,7 +60,7 @@ public final class BridgeClient {
             conn = try LineConnection.connect(path: socketPath)
         } catch let error as SocketError where error.isNotRunning {
             guard let launch else {
-                throw BridgeError("The Excalidraw app is not running (no socket at \(socketPath)).")
+                throw BridgeError("The Invic app is not running (no socket at \(socketPath)).")
             }
             try launch()
             conn = try waitForSocket()
@@ -76,6 +76,6 @@ public final class BridgeClient {
             if let c = try? LineConnection.connect(path: socketPath) { return c }
             Thread.sleep(forTimeInterval: 0.2)
         }
-        throw BridgeError("Started the Excalidraw app, but it did not become ready within \(Int(launchTimeout)) seconds.")
+        throw BridgeError("Started the Invic app, but it did not become ready within \(Int(launchTimeout)) seconds.")
     }
 }

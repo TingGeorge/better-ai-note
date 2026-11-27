@@ -54,8 +54,21 @@
 
 - 分支 `main`，到 `568998e`（後端架構頁）為止都已 commit 並 push。
 - 之後的都還沒 commit：1a 搬進來的 `mac/`、`web/`、`scripts/`、`THIRD_PARTY_NOTICES.md`，加上 `.gitignore`、`LICENSE`、`README.md` 和這份筆記的修改。1a 已由 Opus xhigh 審查（沒有擋住的問題），等使用者同意才 commit；commit 訊息要寫上游網址和 `d332730`。
-- `build/Excalidraw.app` 是 1a 驗證時 build 出來的（已被忽略，不會 commit），和裝好的 Excalidraw 同一個 bundle id：不要啟動。
-- `web/test/` 裡的 `*-mac` 測試和 `mcp.test.mjs` 會用程序名稱「Excalidraw」去關 App、送按鍵：1b 改名之前不要跑。
+- 1a 已 commit（`80e9ce5`，沒 push）。1b（改名 Invic、和原本的 App 分開）做完並由 Opus xhigh 審查過，等使用者同意才 commit。
+- `build/Invic.app` 可以啟動：它用自己的 bundle id、資料夾（`~/Library/Application Support/Invic/`）和 socket。實測啟動過一次，原本 Excalidraw 的資料沒被動到。
+- `web/test/` 裡的 `*-mac` 測試還是不要跑：它們把按鍵和滑鼠點擊送給「最前面的 App」，焦點跑掉就會打到別的 App。`mcp.test.mjs` 的真 App 模式會 `pkill -x Invic`。
+- `mac/.build/out/Products/{Debug,Release}/Excalidraw` 是改名前留下的舊程式（被忽略、不在 git 裡），跑了會用到原本 App 的資料夾：不要執行；要清掉得先問使用者，用 `trash`。
+- 還沒處理：圖示和原本的 App 一樣；「Invic Help」還連到 excalidraw-mac 的 README。
+
+## 為第 2 部分查到的 SDK 事實（2026-11-27，只查了官方文件，沒看型別檔、沒實測）
+
+- 中止用 `options.abortController`；`interrupt()` 只在串流輸入模式可用。中止時 `for await` 會丟出錯誤（訊息 `Operation aborted` 之類）。畫布 MCP 的子程序會不會跟著停，文件沒寫，要實測。
+- 帶圖片一定要用串流輸入（`prompt` 給 async generator，圖片放 `message.content`）。
+- 分辨錯誤：assistant 訊息的 `error` 欄位，`authentication_failed`（沒登入）對 `rate_limit`（額度）。訂閱額度用完實際是哪個值沒驗證。
+- 結果訊息的 `subtype`：`success`、`error_max_turns`、`error_during_execution` 等；出錯的結果之後 `query()` 還會丟出例外。
+- `allowedTools` 只是「不用問就可以用」，不是限制；要限制用 `tools` 或 `disallowedTools`。`tools: []` 的效果文件沒寫，要實測（之前的實驗用過，要再確認）。沒有人可以問時用 `permissionMode: "dontAsk"`。
+- **和已定的設計衝突**：文件說 `SessionStore.load` 要回傳和 `append` 進去「完全相同」的內容。「記憶檔裡把截圖換成一行字」違反這個約定。做 2c 前要和使用者重新討論（實測能不能用，或改成照存圖片）。
+- `sessionStore` 和 `persistSession: false` 不能同時設。
 
 ## 等「全部結束後」再討論的
 
@@ -72,7 +85,7 @@
 1. 把 excalidraw-mac 的程式搬進這個 repo（`mac/`、`web/`）。分兩塊：
    - 1a 原樣搬（直接複製，上游 commit `d332730`），不改任何程式。2026-11-27 使用者說開始，進行中。
    - 1b 和原本裝好的 Excalidraw App 分開：自己的 bundle id、資料夾、socket、檔案類型。名字用 Invic（使用者已確認）。1a 審查完、使用者同意後才動手。
-   - 1b 做完前，新 build 的 App 和原本的 App 共用資料夾和 socket：**不要啟動它、不要關掉原本的 Excalidraw**（裡面有沒存檔的東西）。
+   - 不管什麼時候都**不要關掉或操作原本的 Excalidraw**（裡面有沒存檔的東西）。
 2. 後端 `/generate`，切成小塊：`agent.ts`、`prompt.ts`、`memory.ts`、`index.ts`。
 3. Swift 外殼啟動伺服器（隨機 token），關 App 時一起關。
 4. AI 主流程：AI 按鈕、輸入框、處理中／完成／失敗；拿掉「AI agent connected」。

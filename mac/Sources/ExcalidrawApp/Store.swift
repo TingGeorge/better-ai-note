@@ -3,7 +3,7 @@ import BridgeCore
 import CryptoKit
 import Foundation
 
-/// App state kept in ~/Library/Application Support/Excalidraw/:
+/// App state kept in ~/Library/Application Support/Invic/:
 /// - recent files, theme and library;
 /// - the drawings open in this session, each with a recovery copy (autosave/<hash>.excalidraw).
 ///   A recovery copy never touches the user's file: only ⌘S does. It is used only if the app

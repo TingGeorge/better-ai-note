@@ -17,7 +17,7 @@ struct ExcalidrawMain {
 @main
 struct ExcalidrawMain {
     static func main() {
-        print("The Excalidraw app runs on macOS only.")
+        print("The Invic app runs on macOS only.")
     }
 }
 #endif

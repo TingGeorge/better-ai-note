@@ -1,7 +1,7 @@
 #if os(macOS)
 import AppKit
 
-/// Excalidraw > Settings… (⌘,): appearance (follow the system, light, dark) and connecting an
+/// Invic > Settings… (⌘,): appearance (follow the system, light, dark) and connecting an
 /// AI agent.
 @MainActor
 final class SettingsWindowController: NSObject {

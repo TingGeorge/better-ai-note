@@ -46,9 +46,9 @@ ai-note-app/
 │   ├── bun.lock
 │   ├── tsconfig.json
 │   └── .env.example               設定範本（複製成 .env）
-├── mac/                           Mac App 外殼和畫布的 MCP 伺服器（Swift；從 excalidraw-mac 搬進來，還沒改）
-├── web/                           畫布頁面（React + Excalidraw；從 excalidraw-mac 搬進來，還沒改）
-├── scripts/build-app.sh           把 web/ 和 mac/ 包成 App
+├── mac/                           Mac App 外殼和畫布的 MCP 伺服器（Swift；以 excalidraw-mac 為基礎，App 叫 Invic）
+├── web/                           畫布頁面（React + Excalidraw；以 excalidraw-mac 為基礎）
+├── scripts/build-app.sh           把 web/ 和 mac/ 包成 build/Invic.app
 ├── THIRD_PARTY_NOTICES.md         第三方軟體的授權（web 的 build 產生）
 ├── .gitignore
 ├── LICENSE

@@ -1,7 +1,7 @@
 import Foundation
 
 public enum AppPaths {
-    public static let bundleIdentifier = "io.github.tinggeorge.excalidraw"
+    public static let bundleIdentifier = "io.github.tinggeorge.invic"
 
     /// Where the app keeps its autosave, settings and the bridge socket.
     /// `EXCALIDRAW_MAC_HOME` overrides it (used by tests).
@@ -11,9 +11,9 @@ public enum AppPaths {
         }
         let home = FileManager.default.homeDirectoryForCurrentUser
         #if os(macOS)
-        return home.appendingPathComponent("Library/Application Support/Excalidraw", isDirectory: true)
+        return home.appendingPathComponent("Library/Application Support/Invic", isDirectory: true)
         #else
-        return home.appendingPathComponent(".local/share/excalidraw-mac", isDirectory: true)
+        return home.appendingPathComponent(".local/share/invic", isDirectory: true)
         #endif
     }
 

@@ -22,7 +22,7 @@ export async function startFakeApp(home) {
   async function handle(method, params) {
     if (!FORWARDED.has(method)) throw new Error(`unknown method "${method}"`);
     if (!ANYTIME.has(method) && !doc.file) {
-      throw new Error("No drawing is open in Excalidraw. Ask the user to create a new file (File > New File…) or open one in the app, then try again.");
+      throw new Error("No drawing is open in Invic. Ask the user to create a new file (File > New File…) or open one in the app, then try again.");
     }
     const res = await h.call(method, params);
     if (!res.ok) throw new Error(res.error);

@@ -1,7 +1,7 @@
 // Clicks the real Mac app with real mouse events (macOS CI, after mcp.test.mjs left a
 // drawing open): the tools in the title bar row work, the Library button opens the
 // library, and the empty parts of that row drag the window.
-//   EXCALIDRAW_MAC_HOME=… EXCALIDRAW_APP_PATH=…/Excalidraw.app node --test test/ui-mac.test.mjs
+//   EXCALIDRAW_MAC_HOME=… EXCALIDRAW_APP_PATH=…/Invic.app node --test test/ui-mac.test.mjs
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { connect } from "node:net";
@@ -31,7 +31,7 @@ function bridge(method, params = {}) {
 
 const mouse = (...args) => execFileSync("swift", [MOUSE, ...args.map(String)], { stdio: "inherit" });
 const osa = (script) => execFileSync("osascript", ["-e", script]).toString().trim();
-const inApp = (script) => osa(`tell application "System Events" to tell process "Excalidraw"\n${script}\nend tell`);
+const inApp = (script) => osa(`tell application "System Events" to tell process "Invic"\n${script}\nend tell`);
 const menuItem = (menu, item) => `menu item "${item}" of menu "${menu}" of menu bar item "${menu}" of menu bar 1`;
 /** Opens a menu of the menu bar (so it's validated), reads it, closes it. */
 function readMenu(menu, what) {
@@ -203,7 +203,7 @@ test("title bar row of the drawing window", { skip: !(HOME && APP) && "needs the
   });
 
   await t.test("Settings… (⌘,) opens the settings window (L2)", async () => {
-    clickMenu("Excalidraw", "Settings…");
+    clickMenu("Invic", "Settings…");
     await sleep(800);
     assert.equal(inApp(`exists window "Settings"`), "true");
     shot("settings");

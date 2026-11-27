@@ -1,10 +1,10 @@
 // Prints the accessibility tree of the front window of a running app, one element per line:
 // "<depth-indent>role | description | title | value". Used in CI to check what VoiceOver sees.
-//   swift test/ax-tree.swift Excalidraw
+//   swift test/ax-tree.swift Invic
 import AppKit
 import ApplicationServices
 
-let name = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "Excalidraw"
+let name = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "Invic"
 guard let app = NSWorkspace.shared.runningApplications.first(where: { $0.localizedName == name }) else {
     FileHandle.standardError.write(Data("\(name) is not running\n".utf8))
     exit(1)

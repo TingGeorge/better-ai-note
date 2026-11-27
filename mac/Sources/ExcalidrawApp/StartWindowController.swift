@@ -31,7 +31,7 @@ final class StartWindowController: NSObject, NSWindowDelegate {
             contentRect: NSRect(x: 0, y: 0, width: 780, height: 480),
             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView], backing: .buffered, defer: false)
         super.init()
-        window.title = "Excalidraw"
+        window.title = "Invic"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
@@ -80,7 +80,7 @@ final class StartWindowController: NSObject, NSWindowDelegate {
         icon.widthAnchor.constraint(equalToConstant: 88).isActive = true
         icon.heightAnchor.constraint(equalToConstant: 88).isActive = true
 
-        let name = NSTextField(labelWithString: "Excalidraw")
+        let name = NSTextField(labelWithString: "Invic")
         name.font = .systemFont(ofSize: 22, weight: .bold)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         let subtitle = NSTextField(

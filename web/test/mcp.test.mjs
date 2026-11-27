@@ -2,7 +2,7 @@
 //
 //   Linux (no Mac app): MCP_BIN=path/to/excalidraw-mcp node --test test/mcp.test.mjs
 //     -> a fake app (test/fake-app.mjs) serves the bridge socket with the real page.
-//   macOS CI:           MCP_BIN=… EXCALIDRAW_APP_PATH=…/Excalidraw.app REAL_APP=1 node --test …
+//   macOS (real app):   MCP_BIN=… EXCALIDRAW_APP_PATH=…/Invic.app REAL_APP=1 node --test …
 //     -> the MCP server starts the real app itself, exactly as it would for an agent.
 //
 // The flow is the one the app is built for: the user opens (or creates) a file, the agent
@@ -22,7 +22,7 @@ const REAL_APP = process.env.REAL_APP === "1";
 const APP = process.env.EXCALIDRAW_APP_PATH;
 
 const EMPTY_SCENE =
-  '{"type":"excalidraw","version":2,"source":"Excalidraw for Mac","elements":[],"appState":{"gridSize":20,"viewBackgroundColor":"#ffffff"},"files":{}}';
+  '{"type":"excalidraw","version":2,"source":"Invic","elements":[],"appState":{"gridSize":20,"viewBackgroundColor":"#ffffff"},"files":{}}';
 
 const textOf = (res) => res.content.filter((c) => c.type === "text").map((c) => c.text).join("\n");
 const jsonOf = (res) => {
@@ -93,7 +93,7 @@ test("excalidraw-mcp end to end", { skip: !MCP_BIN && "set MCP_BIN" }, async (t)
   }
 
   await t.test("handshake and tool list", async () => {
-    assert.equal(client.getServerVersion().name, "excalidraw-mac");
+    assert.equal(client.getServerVersion().name, "invic");
     assert.match(client.getInstructions(), /⌘S/);
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((x) => x.name).sort(), [
@@ -193,7 +193,7 @@ test("excalidraw-mcp end to end", { skip: !MCP_BIN && "set MCP_BIN" }, async (t)
     const before = jsonOf(await call("get_scene"));
     assert.equal(before.dirty, true);
     const onDisk = readFileSync(file, "utf8");
-    execFileSync("pkill", ["-TERM", "-x", "Excalidraw"]);
+    execFileSync("pkill", ["-TERM", "-x", "Invic"]);
     const socket = join(home, "bridge.sock");
     for (let i = 0; i < 100 && existsSync(socket); i++) await sleep(100);
     assert.equal(existsSync(socket), false, "app removed its socket on quit");

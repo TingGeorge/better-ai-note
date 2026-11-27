@@ -40,7 +40,7 @@ async function cpuTimes() {
   const out = {};
   for (const line of (await run("ps", ["-A", "-o", "pid=,time=,comm="])).stdout.split("\n")) {
     const m = line.trim().match(/^(\d+)\s+(\S+)\s+(.*)$/);
-    if (!m || !/Excalidraw|WebKit/.test(m[3])) continue;
+    if (!m || !/Invic|WebKit/.test(m[3])) continue;
     const [min, sec] = m[2].split(":");
     out[m[1]] = { name: m[3].split("/").pop(), cpu: Number(min) * 60 + Number(sec) };
   }
@@ -55,7 +55,7 @@ async function energyImpact(ms) {
     const { stdout } = await run("sudo", ["-n", "powermetrics", "--samplers", "tasks", "--show-process-energy", "-i", String(ms), "-n", "1"], { maxBuffer: 1 << 24 });
     const lines = stdout.split("\n");
     const header = lines.find((l) => /^Name\s+ID/.test(l));
-    return [header, ...lines.filter((l) => /Excalidraw|WebKit|^ALL_TASKS/.test(l))].filter(Boolean);
+    return [header, ...lines.filter((l) => /Invic|WebKit|^ALL_TASKS/.test(l))].filter(Boolean);
   } catch (e) {
     console.log("  (powermetrics not available: " + String(e.message).split("\n")[0] + ")");
     powermetrics = false;
@@ -86,7 +86,7 @@ async function measure(label, action) {
 
 const mouse = (...args) => run(MOUSE, args.map(String));
 
-osa('tell application "Excalidraw" to activate');
+osa('tell application "Invic" to activate');
 await sleep(1500);
 const win = await bridge("window_info");
 // the middle of the canvas, below the title bar row, in screen points
@@ -133,7 +133,7 @@ osa('tell application "Finder" to activate');
 await sleep(2000);
 await measure("big drawing: window behind Finder, idle");
 await measure("big drawing: behind Finder, mouse moving over where the canvas shows", hover);
-osa('tell application "Excalidraw" to activate');
+osa('tell application "Invic" to activate');
 // Leave the drawing as the next steps expect it.
 await bridge("delete_elements", { ids: elements.map((e) => e.id) });
 await bridge("zoom_to_fit");

@@ -99,7 +99,7 @@ function fonts() {
 }
 
 const INTRO =
-  "Excalidraw for Mac is an unofficial Mac app built around Excalidraw. It is not made by or affiliated with the Excalidraw team.\n" +
+  "Invic is an unofficial Mac app built around Excalidraw, based on excalidraw-mac (https://github.com/TingGeorge/excalidraw-mac). It is not made by or affiliated with the Excalidraw team.\n" +
   "It includes the following third-party software and fonts, each under its own license, reproduced below.";
 
 function renderText(packages, fontList) {

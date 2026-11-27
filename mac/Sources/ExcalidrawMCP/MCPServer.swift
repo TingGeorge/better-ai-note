@@ -35,7 +35,7 @@ final class MCPServer {
             return result(id: id, [
                 "protocolVersion": .string(chosen),
                 "capabilities": ["tools": ["listChanged": false]],
-                "serverInfo": ["name": "excalidraw-mac", "title": "Excalidraw for Mac", "version": .string(version)],
+                "serverInfo": ["name": "invic", "title": "Invic", "version": .string(version)],
                 "instructions": .string(serverInstructions),
             ])
         case "ping":

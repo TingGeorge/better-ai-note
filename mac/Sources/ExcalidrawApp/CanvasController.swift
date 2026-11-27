@@ -6,7 +6,7 @@ import WebKit
 
 extension UTType {
     /// .excalidraw files (JSON). Declared in Info.plist.
-    static let excalidrawScene = UTType(exportedAs: "io.github.tinggeorge.excalidraw.scene", conformingTo: .json)
+    static let excalidrawScene = UTType(importedAs: "io.github.tinggeorge.excalidraw.scene", conformingTo: .json)
 }
 
 /// A drawing window (the Excalidraw page with one file) and its document commands (save /
@@ -317,7 +317,7 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
     var hasDocument: Bool { file != nil }
 
     var displayName: String {
-        file?.lastPathComponent ?? "Excalidraw"
+        file?.lastPathComponent ?? "Invic"
     }
 
     /// The page shows the file name and folder in the title bar row; the window title (hidden)
@@ -325,7 +325,7 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
     func updateTitle() {
         // Each of these makes AppKit lay out the title bar again (and move the traffic lights):
         // only set what changed, then put the lights back.
-        let title = file?.deletingPathExtension().lastPathComponent ?? "Excalidraw"
+        let title = file?.deletingPathExtension().lastPathComponent ?? "Invic"
         var changed = false
         if window.title != title {
             window.title = title
@@ -382,7 +382,7 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
     }
 
     static let emptyScene = """
-        {"type":"excalidraw","version":2,"source":"Excalidraw for Mac","elements":[],\
+        {"type":"excalidraw","version":2,"source":"Invic","elements":[],\
         "appState":{"gridSize":20,"viewBackgroundColor":"#ffffff"},"files":{}}
         """
 
@@ -418,8 +418,8 @@ final class CanvasController: NSObject, NSWindowDelegate, WKNavigationDelegate, 
                     let alert = NSAlert()
                     alert.messageText = L10n.t("Unsaved changes restored", "已恢復未儲存的變更")
                     alert.informativeText = L10n.t(
-                        "Excalidraw quit before you saved “\(url.lastPathComponent)”. Your changes are back; press ⌘S to save them.",
-                        "Excalidraw 在你儲存「\(url.lastPathComponent)」之前就結束了。變更已經恢復，按 ⌘S 儲存。")
+                        "Invic quit before you saved “\(url.lastPathComponent)”. Your changes are back; press ⌘S to save them.",
+                        "Invic 在你儲存「\(url.lastPathComponent)」之前就結束了。變更已經恢復，按 ⌘S 儲存。")
                     alert.beginSheetModal(for: self.window)
                 }
                 completion(nil)

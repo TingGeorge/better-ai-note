@@ -7,8 +7,8 @@ import Darwin
 import Glibc
 #endif
 
-// excalidraw-mcp: an MCP server (stdio) that lets AI agents draw in the Excalidraw app.
-// It lives inside Excalidraw.app/Contents/MacOS/ and starts the app when needed.
+// excalidraw-mcp: an MCP server (stdio) that lets AI agents draw in the Invic app.
+// It lives inside Invic.app/Contents/MacOS/ and starts the app when needed.
 
 let version = "0.1.0"
 signal(SIGPIPE, SIG_IGN)
@@ -22,7 +22,7 @@ func log(_ message: String) {
     FileHandle.standardError.write(Data("excalidraw-mcp: \(message)\n".utf8))
 }
 
-/// Starts Excalidraw.app in the background (without taking focus from the terminal).
+/// Starts Invic.app in the background (without taking focus from the terminal).
 func launchApp() throws {
     #if os(macOS)
     let env = ProcessInfo.processInfo.environment
@@ -47,10 +47,10 @@ func launchApp() throws {
     try p.run()
     p.waitUntilExit()
     guard p.terminationStatus == 0 else {
-        throw BridgeError("Could not start Excalidraw.app (is it in /Applications?).")
+        throw BridgeError("Could not start Invic.app (is it in /Applications?).")
     }
     #else
-    throw BridgeError("The Excalidraw app is not running.")
+    throw BridgeError("The Invic app is not running.")
     #endif
 }
 
