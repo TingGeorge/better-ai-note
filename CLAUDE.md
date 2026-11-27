@@ -16,6 +16,15 @@ Read `docs/handoff.md` first: it says what is done, what is next, and what canno
 - Do not invent UI. If a screen or state you need is not visible to you, stop and ask the owner for it (a Figma export or access) instead of guessing.
 - When you report UI work, say which screens you compared against the design and which you could not.
 
+## How the owner wants the work split
+
+- The main session discusses and plans with the owner; it does not write the implementation itself.
+- Coding: a subagent on Opus, effort high.
+- Review of each finished part: a separate subagent on Opus, effort xhigh. Give it the code, not your conclusion. Fix what it finds before the next part.
+- Other work: pick whatever subagent fits (pages: Opus, effort medium; Figma work: Fable, effort low or medium).
+- When tasks are different in nature and independent, run several subagents in parallel. Two writers never touch the same files; work that depends on another result waits.
+- If your environment cannot set a subagent's model or effort, say so to the owner instead of silently using something else.
+
 ## Checks
 
 - `cd server && bun test && bun run typecheck`
