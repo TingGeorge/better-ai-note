@@ -23,7 +23,7 @@
 
 - **CI**：`.github/workflows/ci.yml`（commit `0578c40`，已 push）。三個 job：`server`、`web`、`mac`。
   - `server` 和 `web` 兩個 job 的指令在雲端容器裡實際跑過都通過（`bun test` 5 個、`npm test` 42 個、`THIRD_PARTY_NOTICES.md` 檢查通過）。
-  - `mac` job 從來沒跑過。第一次 CI：<https://github.com/TingGeorge/better-ai-note/actions/runs/45977508841>，寫這一行時還在跑，**結果沒看**。接手後先看它，紅的就修。
+  - `mac` job 從來沒跑過。第一次 CI：<https://github.com/TingGeorge/better-ai-note/actions/runs/45977508841>，`server` 和 `web` 在 GitHub 上通過了（含 Playwright 安裝那一步）；`mac` 的 `Build Invic.app` 通過，後面真 App 的測試寫這一行時還在跑，**結果沒看**。接手後先看它（第二次 push 也會再跑一次），紅的就修。
   - **還沒經過 Opus xhigh 審查。**
   - 改名後程式實際用的名字：環境變數仍是 `EXCALIDRAW_MAC_HOME` 和 `EXCALIDRAW_APP_PATH`，MCP 程式仍叫 `excalidraw-mcp`；App 是 `build/Invic.app`，程序名 `Invic`。
   - 沒驗證：`npx playwright-core install --with-deps chromium-headless-shell`（容器的 proxy 擋住下載）；`setup-bun@v2` 裝的是最新的 Bun，lockfile 是 1.4.4 產生的。
