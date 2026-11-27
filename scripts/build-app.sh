@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build Invic.app — universal (Apple Silicon + Intel), fully offline, with the
 # MCP server inside (Contents/MacOS/excalidraw-mcp).
-# Needs Node 20+ and Xcode (or the Command Line Tools with Swift 5.9+).
+# Needs Bun, Node (^20.19 or >=22.12, on PATH: `bun run` uses it for Vite) and Xcode (or the Command Line Tools with Swift 5.9+).
 # Usage: scripts/build-app.sh [version]
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -10,7 +10,8 @@ VERSION="${1:-0.1.0}"
 APP=build/Invic.app
 
 echo "== 1/4 Web page (Excalidraw + fonts)"
-(cd web && npm ci --no-audit --no-fund && npm run build)
+# bun install keeps whatever is already in node_modules (npm ci used to wipe it), so start clean.
+(cd web && rm -rf node_modules && bun install --frozen-lockfile && bun run build)
 
 echo "== 2/4 Swift (app + MCP server, universal)"
 SWIFT_FLAGS=(-c release --arch arm64 --arch x86_64)

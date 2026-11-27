@@ -1,5 +1,5 @@
 // End-to-end tests of the bridge operations in the real built page.
-// Run: npm run build && npm test
+// Run: bun run build && bun run test
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { startHarness, waitFor } from "./harness.mjs";
