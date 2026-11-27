@@ -121,10 +121,6 @@
     border-left: 4px solid var(--green) !important;
   }
 
-  .s-open {
-    border-left: 4px solid var(--orange) !important;
-  }
-
   .s-todo {
     border-left: 4px solid var(--red) !important;
   }
@@ -265,6 +261,34 @@
     white-space: nowrap;
   }
 
+  /* Screenshot gallery */
+  .shots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 18px 0 0;
+  }
+
+  .shots figure {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .shots img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .shots figcaption {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
   /* Lists */
   .assume {
     list-style: none;
@@ -314,7 +338,7 @@
 
   <div class="status">
     <div class="s-done"><b>已定</b><span>方向與架構</span></div>
-    <div class="s-open"><b>暫定</b><span>畫面（等 Figma）</span></div>
+    <div class="s-done"><b>已定</b><span><a href="#screens">畫面</a>（Figma 完成）</span></div>
     <div class="s-todo"><b>還沒做</b><span>程式（後端只有骨架）</span></div>
   </div>
 
@@ -677,68 +701,107 @@
   </div>
 
   <!-- 6. Screens -->
-  <h2>畫面</h2>
-  <p>四個畫面，全新的只有一個。暫定，實作 UI 時用 Figma 再確認。</p>
+  <h2 id="screens">畫面</h2>
+  <p>只有一個視窗，所有事都在裡面做。上下兩條固定的細條，中間換內容；設定和檢查是浮在中間的面板。</p>
 
   <div class="diagram">
-    <svg class="wide" viewBox="0 130 800 320" role="img" aria-label="App screens diagram">
-      <defs>
-        <marker id="arr4" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-          <path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/>
-        </marker>
-      </defs>
+    <svg viewBox="0 0 760 520" role="img" aria-label="One window diagram">
+      <!-- Window -->
+      <rect x="20" y="20" width="720" height="480" rx="14" fill="#ffffff" stroke="#868e96" stroke-width="2"/>
 
-      <!-- Arrows -->
-      <line x1="240" y1="190" x2="288" y2="190" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr4)"/>
-      <line x1="510" y1="190" x2="558" y2="190" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr4)"/>
-      <line x1="400" y1="230" x2="400" y2="348" stroke="#1e1e1e" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arr4)"/>
-      <text x="414" y="296" font-size="15">menu</text>
+      <a href="#note-titlebar">
+        <rect x="34" y="34" width="692" height="66" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="380" y="62" font-size="18" font-weight="700" text-anchor="middle">Title bar</text>
+        <text x="380" y="86" font-size="15" text-anchor="middle">toggle · title · gear</text>
+      </a>
+      <circle cx="58" cy="67" r="6" fill="#ff5f57"/>
+      <circle cx="78" cy="67" r="6" fill="#febc2e"/>
+      <circle cx="98" cy="67" r="6" fill="#28c840"/>
 
-      <!-- Screens -->
-      <a href="#note-setup">
-        <rect x="20" y="150" width="220" height="80" rx="10" fill="#b2f2bb" stroke="#22c55e" stroke-width="2"/>
-        <text x="130" y="184" font-size="18" font-weight="700" text-anchor="middle">Setup check</text>
-        <text x="130" y="208" font-size="15" text-anchor="middle">Claude Code ready?</text>
+      <a href="#note-sidebar">
+        <rect x="34" y="114" width="190" height="292" rx="10" fill="#ffffff" stroke="#868e96" stroke-width="2" stroke-dasharray="8 6"/>
+        <text x="129" y="234" font-size="18" font-weight="700" text-anchor="middle">Sidebar</text>
+        <text x="129" y="258" font-size="15" text-anchor="middle">closed by default</text>
+        <text x="129" y="280" font-size="15" text-anchor="middle">recent notes</text>
       </a>
-      <a href="#note-start">
-        <rect x="290" y="150" width="220" height="80" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
-        <text x="400" y="184" font-size="18" font-weight="700" text-anchor="middle">Start screen</text>
-        <text x="400" y="208" font-size="15" text-anchor="middle">new, open, recent</text>
+
+      <a href="#note-main">
+        <rect x="238" y="114" width="488" height="292" rx="10" fill="#d0ebff" stroke="#4a9eed" stroke-width="2"/>
+        <text x="256" y="146" font-size="18" font-weight="700">Main area</text>
+        <text x="256" y="170" font-size="15">Home or Canvas</text>
       </a>
-      <a href="#note-canvas">
-        <rect x="560" y="150" width="220" height="80" rx="10" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2"/>
-        <text x="670" y="184" font-size="18" font-weight="700" text-anchor="middle">Canvas</text>
-        <text x="670" y="208" font-size="15" text-anchor="middle">canvas, AI button</text>
+
+      <a href="#note-dialog">
+        <rect x="332" y="196" width="300" height="180" rx="10" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="482" y="258" font-size="18" font-weight="700" text-anchor="middle">Dialog</text>
+        <text x="482" y="284" font-size="15" text-anchor="middle">Settings / Setup check</text>
+        <text x="482" y="308" font-size="15" text-anchor="middle">800 x 584, centred</text>
       </a>
-      <a href="#note-settings">
-        <rect x="290" y="350" width="220" height="80" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
-        <text x="400" y="384" font-size="18" font-weight="700" text-anchor="middle">Settings</text>
-        <text x="400" y="408" font-size="15" text-anchor="middle">look, AI, voice</text>
+
+      <a href="#note-statusbar">
+        <rect x="34" y="420" width="692" height="66" rx="10" fill="#e9ecef" stroke="#868e96" stroke-width="2"/>
+        <text x="380" y="448" font-size="18" font-weight="700" text-anchor="middle">Status bar</text>
+        <text x="380" y="472" font-size="15" text-anchor="middle">folder · Claude Code ready</text>
       </a>
     </svg>
   </div>
 
   <div class="notes">
-    <div class="note" id="note-setup" style="--c:#22c55e">
-      <h3>Setup check</h3>
-      <p>新的；第一次打開或 Claude Code 有問題時才出現，檢查有沒有裝、有沒有登入、版本夠不夠。</p>
+    <div class="note" id="note-titlebar" style="--c:#868e96">
+      <h3>Title bar</h3>
+      <p>最上面的細條。左邊是視窗的三個圓點和側欄開關，中間是標題，右邊是設定齒輪。例：「Plan — Edited」。</p>
     </div>
-    <div class="note" id="note-start" style="--c:#868e96">
-      <h3>Start screen</h3>
-      <p>已經有；新增、打開、最近的筆記。</p>
+    <div class="note" id="note-main" style="--c:#4a9eed">
+      <h3>Main area (Home / Canvas)</h3>
+      <p>中間的大區塊。沒開筆記時是首頁：新增（⌘N）、打開（⌘O）和最近的筆記；開了筆記就是畫布，多了 AI 按鈕。</p>
     </div>
-    <div class="note" id="note-canvas" style="--c:#4a9eed">
-      <h3>Canvas</h3>
-      <p>核心；已有畫布，加上 AI 按鈕和輸入框。</p>
+    <div class="note" id="note-statusbar" style="--c:#868e96">
+      <h3>Status bar</h3>
+      <p>最下面的細條。右邊顯示 Claude Code 能不能用；在畫布上，左邊顯示筆記的資料夾。例：「Claude Code ready」。</p>
     </div>
-    <div class="note" id="note-settings" style="--c:#868e96">
-      <h3>Settings</h3>
-      <p>已經有；加上 AI 和語音的設定。</p>
+    <div class="note" id="note-sidebar" style="--c:#868e96">
+      <h3>Sidebar</h3>
+      <p>平常收起來。按開關後從左邊推出一條窄清單，只有最近的筆記和「Open Other…」。一次只開一份筆記，從這裡切換。</p>
+    </div>
+    <div class="note" id="note-dialog" style="--c:#8b5cf6">
+      <h3>Dialog</h3>
+      <p>浮在視窗中間的面板，後面變暗。按齒輪打開設定；Claude Code 有問題時，啟動就出現檢查面板。</p>
     </div>
   </div>
 
+  <div class="shots">
+    <figure>
+      <a href="images/screen-home.png"><img src="images/screen-home.png" width="1728" height="989" loading="lazy" alt="Home: app name, New note and Open cards, recent notes list"></a>
+      <figcaption>首頁：新增、打開、最近的筆記。</figcaption>
+    </figure>
+    <figure>
+      <a href="images/screen-canvas.png"><img src="images/screen-canvas.png" width="1728" height="989" loading="lazy" alt="Canvas with a selection and the small AI button at its corner"></a>
+      <figcaption>畫布：選了東西，角落出現小 AI 按鈕。</figcaption>
+    </figure>
+    <figure>
+      <a href="images/screen-sidebar.png"><img src="images/screen-sidebar.png" width="1728" height="989" loading="lazy" alt="Canvas with the sidebar open, showing recent notes"></a>
+      <figcaption>側欄打開：最近的筆記。</figcaption>
+    </figure>
+    <figure>
+      <a href="images/screen-settings.png"><img src="images/screen-settings.png" width="1728" height="989" loading="lazy" alt="Settings dialog over the dimmed window"></a>
+      <figcaption>設定：外觀、Claude Code、語音輸入、AI agent。</figcaption>
+    </figure>
+    <figure>
+      <a href="images/screen-setup.png"><img src="images/screen-setup.png" width="1728" height="989" loading="lazy" alt="Setup check dialog with three checks and a Check Again button"></a>
+      <figcaption>啟動檢查：有沒有裝、有沒有登入、版本夠不夠。</figcaption>
+    </figure>
+  </div>
+
   <div class="rows">
-    <div class="row"><b>不做</b><span>帳號和登入畫面、筆記資料庫、用量畫面。筆記就是電腦上的檔案，用 Finder 管理。</span></div>
+    <div class="row"><b>面板的規則</b><span>所有面板一樣大（設計稿 800×584），寬比高大，置中。四邊留白一樣（24），每個灰色區塊的內距一樣（16），寬鬆不擠。放不下時內容上下捲，標題不動。</span></div>
+    <div class="row"><b>設定</b><span>外觀（跟系統、淺色、深色，整個 App 一起換，不只畫布）、Claude Code（狀態、位置）、語音輸入（網址、金鑰、模型、測試按鈕）、AI agent（接外部的 MCP 用戶端）。有關閉按鈕。</span></div>
+    <div class="row"><b>啟動檢查</b><span>三項檢查、安裝指令、「Check Again」。沒有關閉按鈕，要修好才能用。</span></div>
+    <div class="row"><b>畫布上的 AI</b><span>AI 按鈕在工具列最右邊；選了東西，選取框右上角也有一個小的，輸入框打開就消失。輸入框（文字、麥克風、送出）在選取的下面，沒選就在下方中間。</span></div>
+    <div class="row"><b>AI 做事時</b><span>交出去的東西變淡、加鎖；下方中間顯示「AI is working…」和取消。做完顯示訊息和復原；失敗顯示訊息和重試。原本右下角的「AI agent connected」拿掉。</span></div>
+    <div class="row"><b>一套樣式</b><span>整個 App 一種字型、一組字級、一組圓角、一種線色、一種陰影、一種強調色（Excalidraw 的紫色），存成 Figma 變數。只畫了淺色。</span></div>
+    <div class="row"><b>文字和名字</b><span>介面文字用英文。App 名字還沒定，設計稿先寫「Excalidraw」。</span></div>
+    <div class="row"><b>不做</b><span>帳號和登入畫面、筆記資料庫、用量畫面。筆記就是電腦上的檔案。</span></div>
+    <div class="row"><b>Figma</b><span><a href="https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1">設計稿</a>，看「App」頁；舊版本在 archive 頁。</span></div>
   </div>
 
   <!-- 7. Settled -->
@@ -762,13 +825,19 @@
     <li>由 Swift 外殼連伺服器、錄音。</li>
     <li>不自動重試；斷線就停。</li>
     <li>Log 放在 App 自己的資料夾，一天一個檔，留 30 天。</li>
+    <li>只有一個視窗：上面標題列、中間主畫面（首頁或畫布）、下面狀態列。</li>
+    <li>側欄平常收起來，打開只有最近的筆記；一次只開一份筆記。</li>
+    <li>設定和啟動檢查是視窗中間的面板：一樣大、留白一樣、放不下就上下捲。</li>
+    <li>外觀設定套用到整個 App，不只畫布。</li>
+    <li>拿掉右下角的「AI agent connected」。</li>
     <li>過時的文件放 docs/archive/。</li>
   </ul>
 
   <!-- 8. Tentative and open -->
   <h2>暫定和還沒決定</h2>
   <ul class="assume">
-    <li>四個畫面（暫定，等 Figma）。</li>
+    <li>App 的名字。</li>
+    <li>要不要畫一套深色的樣式。</li>
     <li>畫布檔被單獨搬走、和記憶檔分開時怎麼處理。</li>
     <li>要不要另外做「撤回這次 AI 的修改」的按鈕，還是用 ⌘Z 和「叫 AI 還回來」就夠。</li>
     <li>記憶檔保留多久。它會一直變大：實驗裡兩次請求就有約 490 KB。</li>

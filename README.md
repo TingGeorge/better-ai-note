@@ -8,7 +8,8 @@
 
 - [概念文件](docs/AI筆記App_概念文件.md)：這個 App 要做什麼
 - [技術架構](docs/AI筆記App_技術架構.md)：技術選擇
-- [架構圖](docs/architecture.html)：App 的元件與流程（用瀏覽器開）
+- [架構圖](docs/architecture.html)：App 的元件、流程和畫面（用瀏覽器開）
+- [畫面設計](https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1)：Figma 上的完整畫面
 - [archive](docs/archive/)：放棄的 iPad 與獨立伺服器方向，留作紀錄
 
 ## 資料夾
@@ -24,7 +25,8 @@ ai-note-app/
 │   ├── AI筆記App_技術架構.md
 │   ├── architecture.html
 │   ├── archive/                   過時的文件，留作紀錄
-│   └── excalidraw/                架構圖的原始檔
+│   ├── excalidraw/                架構圖的原始檔
+│   └── images/                    畫面設計的截圖
 ├── server/                        Bun 後端
 │   ├── src/
 │   │   ├── index.ts               入口：檢查 token、把請求分派給模組
