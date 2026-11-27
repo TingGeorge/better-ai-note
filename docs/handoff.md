@@ -6,12 +6,47 @@
 
 ## 現在在做什麼
 
-**設計全部定案（整體、畫面、後端），文件都已 commit 並 push（2026-11-27）。還沒開始實作，一行程式都沒寫；等使用者說「開始」，從第 1 部分做。**
+**實作中。第 1 部分做完（1a 原樣搬入 `80e9ce5`、1b 改名 Invic `eaad45d`）。第 2 部分（後端 `/generate`）和第 3 部分（外殼啟動伺服器）還沒寫任何程式。2026-11-27 使用者決定把開發交給雲端的 agent 接手，並用 GitHub 的 CI/CD 做自動化測試。**
+
+## 給接手的雲端 agent（先讀這一節）
+
+### 你的環境和本機不一樣的地方
+
+| 事情 | 本機（之前） | 雲端（你） |
+|---|---|---|
+| build Mac App（`mac/`、`scripts/build-app.sh`） | 可以 | Linux 上不行：AppKit、WKWebView、`codesign`、`sips`、`iconutil` 都只有 macOS 有。只能靠 GitHub 的 macOS runner |
+| `web/`（build、typecheck、`npm test`） | 可以 | 可以。`npm test` 需要 Chromium：`npx playwright-core install chromium-headless-shell`，或用 `PW_CHROMIUM` 指到現成的 Chrome |
+| `server/`（`bun test`、typecheck） | 可以 | 可以 |
+| 真的叫 Claude（Agent SDK） | 用使用者已登入訂閱的 Claude Code | 沒有登入。測試不能依賴真的模型：用假的 Claude Code 執行檔或把 SDK 那一層隔開來測。要在 CI 跑真的模型得由使用者提供 `CLAUDE_CODE_OAUTH_TOKEN`（`claude setup-token`）當 secret，這要他決定，不要自己加 |
+| 畫布 MCP（`excalidraw-mcp`）＋ Invic App | 可以啟動 | 只有 macOS runner 上可以。`web/test/fake-app.mjs` 是假的 App，`mcp.test.mjs` 用它可以在沒有 App 的情況下測 MCP 程式（MCP 程式是 Swift，也要 macOS 才能編） |
+| Figma | 有 MCP 可以讀 | 多半沒有。畫面以 `docs/images/` 的截圖和 `architecture.html` 的「畫面」為準 |
+| 暫存資料夾、我的記憶檔、使用者的全域規則 | 有 | 沒有。需要的都已寫進這份筆記和 repo 根目錄的 `CLAUDE.md` |
+
+### CI 還沒有，要你建
+
+- 上游 excalidraw-mac 有一份現成的 workflow 沒搬進來：<https://github.com/TingGeorge/excalidraw-mac/blob/d332730/.github/workflows/excalidraw-mac.yml>。它在 macOS runner 上 build App，用 `EXCALIDRAW_MAC_HOME=/tmp/exm-ci` 隔離，再跑真 App 的測試。拿它當起點，名字改成 Invic。
+- 建議分三個 job：`server`（ubuntu：`bun test`、typecheck）、`web`（ubuntu：build、typecheck、`npm test`）、`mac`（macos：`scripts/build-app.sh`、`mcp.test.mjs`、真 App 的 `*-mac` 測試）。
+- `*-mac` 測試會把按鍵和滑鼠送給「最前面的 App」。在 CI 的乾淨機器上可以跑；**在使用者的 Mac 上不可以跑**。
+- `web/scripts/third-party.mjs` 的註解說「CI 會檢查 `THIRD_PARTY_NOTICES.md` 是不是最新」：CI 建好後補上這個檢查（build 後 `git diff --exit-code THIRD_PARTY_NOTICES.md`）。
+- macOS runner 多半是 Apple 晶片（`macos-latest`）；設計是只支援 Apple 晶片，但 `build-app.sh` 目前還是編 universal，做第 3 部分時改成只編 arm64。
+
+### 接下來要做的（順序見最下面「實作的順序和流程」）
+
+1. 建 CI（上面）。
+2. 第 2 部分：`server/src/generate/` 的 `agent.ts`、`prompt.ts`、`memory.ts`、`index.ts`，加 `log.ts` 和 `prompts/`。設計在 `backend-architecture.html`；查到的 SDK 事實在下面「為第 2 部分查到的 SDK 事實」；以前的實驗程式在 `docs/experiments/`。
+3. 第 3 部分：Swift 外殼啟動伺服器。我寫好的完整工作說明在下面「第 3 部分的工作說明」。
+4. 第 4–8 部分和收尾。
+
+### 只有使用者的 Mac 能驗證的（雲端做不到，要留給他或留到最後）
+
+- 真的用訂閱叫 Claude 在畫布上畫東西；中止後子程序有沒有停；額度用完和沒登入實際長什麼樣。
+- 畫面對照 Figma、實際操作 App。
+- 這些請在 PR 或這份筆記裡明白列出「沒驗證」，不要寫成已完成。
 
 - Figma 定案：<https://www.figma.com/design/5DfsHafSo4iqhnIUUlmVWN/Untitled?node-id=0-1>（file key `5DfsHafSo4iqhnIUUlmVWN`），`App` 頁，22 個畫面：Home 2、Canvas 側邊欄關 10、Canvas 側邊欄開 2、Settings 3、Setup check 5，加元件和設計變數。舊版在兩個 Archive 頁。
 - 畫面的決定都寫進了 `architecture.html` 的「畫面」、技術架構文件、概念文件、README；截圖在 `docs/images/`。
 - 後端的設計另外寫成一頁 [backend-architecture.html](backend-architecture.html)（2026-11-27）：模組、`/generate` 和 `/transcribe` 的格式、錯誤種類、記憶、啟動時的設定、log。頁面最上面的 11 件事使用者在 2026-11-27 都確認了（只剩「用哪個模型」還沒決定）；標 `未驗證` 的要在實作那一塊時先試。使用者已經決定的一項：`/generate` 的請求要附截圖（他的理由：多花的 token 不多，準確率比較好）。截圖用 PNG、放在 JSON 裡的 base64、長寬設上限；記憶轉接器寫檔時把圖片換成一行字，不存進記憶檔（要先驗證 SDK 接續對話不會出問題）。
-- 這一頁是用暫存資料夾裡的 `backend_diagrams.py` 和 `backend-architecture.template.html` 產生的（改模板再重跑）。暫存資料夾被清掉的話，直接改 HTML 就好。
+- 這一頁原本是用本機暫存資料夾裡的腳本產生的，腳本不在 repo 裡：要改就直接改 HTML（圖的原始檔在 `docs/excalidraw/`）。
 - 原因：最早（11/24）和使用者討論過的後端模組切分，在改成 Mac App 時跟著舊頁面一起進了 archive，現行文件裡沒有。使用者發現找不到。以後封存時，還有效的內容要留在現行文件裡。
 
 ## 畫面設計的重點（細節在 architecture.html）
@@ -47,18 +82,17 @@
 - 記憶：換一個新程式接續對話，AI 記得刪了什麼並重畫回來。
 - 伺服器編成單一程式（要重新簽章）、斷線偵測、版本不一致、圖片輸入、從 App 環境找 Claude Code。
 
-實驗用的最小程式在暫存資料夾（可能被清掉）：
-`/private/tmp/claude-501/-Users-apple-Desktop-personal-projects-ai-note-app/b4c8a5c4-0695-4d4b-9c67-0d212ad03e9f/scratchpad/sdktest/new/` 裡的 `canvas.ts`（接畫布 MCP）和 `memory.ts`（記憶轉接器）。實作 `/generate` 時可以拿來改。
+實驗用的最小程式已存進 repo 的 [`docs/experiments/`](experiments/)：`canvas.ts`（接畫布 MCP）、`memory.ts`（記憶轉接器）、`image.ts`（圖片輸入）。當時用的是 `@anthropic-ai/claude-agent-sdk` `^0.3.332` 和原本的 Excalidraw App；路徑是示意的，不能直接跑。實作 `/generate` 時拿來改。
 
 ## Git 狀態
 
-- 分支 `main`，到 `568998e`（後端架構頁）為止都已 commit 並 push。
-- 之後的都還沒 commit：1a 搬進來的 `mac/`、`web/`、`scripts/`、`THIRD_PARTY_NOTICES.md`，加上 `.gitignore`、`LICENSE`、`README.md` 和這份筆記的修改。1a 已由 Opus xhigh 審查（沒有擋住的問題），等使用者同意才 commit；commit 訊息要寫上游網址和 `d332730`。
-- 1a 已 commit（`80e9ce5`，沒 push）。1b（改名 Invic、和原本的 App 分開）做完並由 Opus xhigh 審查過，等使用者同意才 commit。
+- 分支 `main`，remote `TingGeorge/better-ai-note`。`568998e`（後端架構頁）之前的已 push。
+- 1a `80e9ce5`（原樣搬入，上游 `d332730`）和 1b `eaad45d`（改名 Invic）已 commit，都經 Opus xhigh 審查過。
+- 交接用的修改（這份筆記、`CLAUDE.md`、`docs/experiments/`）：看 `git log` 確認有沒有 commit 和 push；寫這一行時還在等使用者說可以。
 - `build/Invic.app` 可以啟動：它用自己的 bundle id、資料夾（`~/Library/Application Support/Invic/`）和 socket。實測啟動過一次，原本 Excalidraw 的資料沒被動到。
 - `web/test/` 裡的 `*-mac` 測試還是不要跑：它們把按鍵和滑鼠點擊送給「最前面的 App」，焦點跑掉就會打到別的 App。`mcp.test.mjs` 的真 App 模式會 `pkill -x Invic`。
-- `mac/.build/out/Products/{Debug,Release}/Excalidraw` 是改名前留下的舊程式（被忽略、不在 git 裡），跑了會用到原本 App 的資料夾：不要執行；要清掉得先問使用者，用 `trash`。
-- 還沒處理：圖示和原本的 App 一樣；「Invic Help」還連到 excalidraw-mac 的 README。
+- 1b 已 commit（`eaad45d`，沒 push）。改名前留下的兩個舊程式（`mac/.build/out/Products/{Debug,Release}/Excalidraw`）使用者同意後已用 `trash` 丟掉。
+- 圖示：使用者之後會把設計好的 icon 傳來，到時候換。「Invic Help」的連結等第 6、7 部分一起處理（使用者同意）。
 
 ## 為第 2 部分查到的 SDK 事實（2026-11-27，只查了官方文件，沒看型別檔、沒實測）
 
@@ -70,6 +104,20 @@
 - **和已定的設計衝突**：文件說 `SessionStore.load` 要回傳和 `append` 進去「完全相同」的內容。「記憶檔裡把截圖換成一行字」違反這個約定。做 2c 前要和使用者重新討論（實測能不能用，或改成照存圖片）。
 - `sessionStore` 和 `persistSession: false` 不能同時設。
 
+## 第 3 部分的工作說明（還沒做）
+
+Swift 外殼在啟動時把包在 App 裡的伺服器跑起來，關 App 時一起關。
+
+- **`server/src/index.ts`**：只聽 `127.0.0.1`；埠從 `PORT` 讀，手動跑時預設 3000；stdin 關掉時自己結束（外殼握著 pipe 的寫入端，外殼不管怎麼死掉伺服器都不會變孤兒），但從終端機 `bun run dev` 或 `bun test` 時不能因此誤結束。
+- **`scripts/build-app.sh`**：用 `bun build --compile`（`bun-darwin-arm64`）把伺服器編成 `Invic.app/Contents/MacOS/invic-server`，放在簽章之前；編出來的 Bun 程式要重新簽章，`codesign --verify --deep --strict` 要過。Swift 改成只編 arm64。
+- **`mac/`**：一個檔案的小型別（例如 `ServerProcess.swift`），由 AppDelegate 持有：
+  - 每次啟動產生隨機 token（只在記憶體，不寫檔、不進 log）、挑一個空的本機埠。
+  - 啟動伺服器時給環境變數：`ACCESS_TOKEN`、`PORT`、`CLAUDE_CODE_PATH`、`CANVAS_MCP_PATH`（包在 App 裡的 `excalidraw-mcp`）、`EXCALIDRAW_MAC_HOME`（`AppPaths` 的資料夾，讓伺服器叫起來的 MCP 連到「這個」App）、`LOG_DIR`（資料夾裡的 `Logs`）。`STT_*` 留到第 8 部分。
+  - 找 `claude`：圖形 App 拿不到 shell 的 PATH，要查常見位置（`~/.local/bin`、`~/.claude/local`、`/opt/homebrew/bin`、`/usr/local/bin`），再退到問登入 shell `command -v claude`。找不到也照樣啟動伺服器（第 7 部分會顯示 Setup check）。
+  - 伺服器意外結束時重啟一次（不要無限重試）；提供 `restart()` 給設定改變時用；提供 base URL 和 token 給之後送請求的程式。
+  - 找不到包好的伺服器（例如直接 `swift build` 跑）時記一行 log 就繼續；開發時可用 `INVIC_SERVER_PATH` 指定。
+- **完成的檢查**：伺服器是 App 的子程序、只聽 127.0.0.1、沒帶 token 回 401；正常關 App 和 `kill -9` App 兩種情況下伺服器都在幾秒內消失。
+
 ## 等「全部結束後」再討論的
 
 使用者說測試留下的東西先不處理，等全部結束再說。刪除一律用 `trash`，而且要先列出確切路徑、得到同意：
@@ -78,9 +126,17 @@
 - `~/Desktop/ai-note-test/`（實驗的記憶檔）
 - `~/.claude/projects/-Users-apple-Desktop-ai-note-test/`（SDK 留的副本）
 
-## 進入實作時的順序（使用者還沒同意開始）
+## 實作的順序和流程（實作中）
 
-一次做一部分；做完我自己審查，停下來等使用者審查，他同意才 commit 和做下一部分。
+**流程（使用者 2026-11-27 改的）**：整個 App 照我的順序一路做完，不用每一部分停下來等他審查，後端每一塊也不用先給圖確認。全部做完、測試過、確定沒問題之後，他才做最後一次 code review。
+
+所以由我把關：每一部分寫明「怎樣算完成」，寫完交 Opus xhigh 審查，問題修完才做下一部分。替使用者做的決定都記在下面的「我替使用者做的決定」，`backend-architecture.html` 要跟著實際做出來的改，最後的 review 會看這些。
+
+沒有變的：刪檔案要先問（本機只用 `trash`）；不碰原本的 Excalidraw；他說 push 才 push。commit 的方式使用者還沒回答（我的建議：每一部分審查完就 commit 一次，方便最後 review）；雲端用 PR 的話照他對 PR 的指示。
+
+### 我替使用者做的決定（最後 review 時給他看）
+
+- 2a：`runAgent` 的輸入分成 `rules` 和 `content`（帶截圖一定要用串流輸入，不能是一個字串）；多一個錯誤種類 `cancelled`。
 
 1. 把 excalidraw-mac 的程式搬進這個 repo（`mac/`、`web/`）。分兩塊：
    - 1a 原樣搬（直接複製，上游 commit `d332730`），不改任何程式。2026-11-27 使用者說開始，進行中。
@@ -98,11 +154,15 @@
 
 誰做什麼（使用者 2026-11-27 指定）：寫程式由 Opus high 的子代理做，審查由 Opus xhigh 的子代理做，其他工作我自己選子代理；主對話只和使用者討論和計畫。
 
-審查的分工：使用者細看後端和「各部分怎麼接起來」（後端每一塊動手前先給圖和格式讓他確認）；前端和 Mac App 他只用用看，所以我要自己對照 Figma 檢查仔細、給截圖。
+最後 review 的重點：使用者細看後端和「各部分怎麼接起來」；前端和 Mac App 他只用用看，所以我要自己對照 Figma 檢查仔細、留截圖。
+
+測試的方法：`*-mac` 測試不能跑（會把輸入送給最前面的 App）。畫面用只針對 Invic 的 computer-use 工具檢查；畫布用 `web/test/bridge-call.mjs` 連 Invic 的 socket。
 
 ## 和這位使用者工作的方式
 
 - 用繁體中文回覆。他用語音輸入，字常常辨識錯（例如「Cloud Code」是 Claude Code、「Excalibur／Xcode」是 Excalidraw、「A 群／A 人」是 agent），照意思理解。
+- 寫程式的規則（他的全域規則，雲端看不到，摘要在 repo 根目錄的 `CLAUDE.md`）：能不寫就不寫、最少的程式、不加沒要求的抽象和依賴；每個模組資料夾一個主檔 `index.ts`，其他是只給它用的小幫手；函式由上往下排；一定加大括號；Bun 的原生 API 和 `bun:test`；只改必要的地方；刻意的簡化用 `ponytail:` 註解標出來。
+- 刪檔案：本機只能用 `trash`，而且要先列出確切路徑、得到同意。雲端沒有 `trash`：用 `git rm` 刪 repo 裡被追蹤的檔案可以（留在 git 歷史裡），其他一律先問。
 - 他先看圖，文字多了會迷路。討論時在對話裡直接畫圖，**用 Excalidraw 的內嵌工具**，不要用內建的畫圖模組。
 - 每個不確定的地方要說清楚「沒查證」；他會要求去查證。
 - 頁面（HTML）由 Opus effort medium 的子代理建；Figma 的工作他指定用 Fable（low 或 medium）的子代理。
